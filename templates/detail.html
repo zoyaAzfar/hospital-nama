@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Deep-Dive Analysis View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+<style>
+body, html { 
+            height: 100%; 
+            margin: 0; 
+            background-color: #ffffff; 
+            font-family: "Noto Sans";
+            color: #000;
+        }
+.brutal-border{border:2px solid #000;border-radius:0!important;background:#fff;}
+.brutal-btn{background:#fff;color:#000;border:2px solid #000;border-radius:0;font-weight:bold;transition:all .1s ease-in-out;}
+.brutal-btn:hover{background:#000;color:#fff;transform:translate(3px,3px)}
+.card,.review-box,#major-theme-details,#sub-theme-details{border:2px solid #000!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}
+.chart-container{position:relative;margin:auto;height:420px;width:420px}
+.btn,.rounded,.shadow-sm{border-radius:0!important;box-shadow:none!important}
+.border-end{border-right:2px solid #000!important}
+h1,h5,h6{font-weight:700}
+</style>
+
+</head>
+<body class="d-flex flex-column">
+
+<nav class="navbar navbar-expand-lg px-4 py-3 " style = "background-color:#003049;" >
+    <span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" onclick="switchTab('home-view')" >Hospital Nama | ہسپتال نامہ</span>
+    <div class="ms-auto">
+        <ul class="navbar-nav flex-row gap-4 ">
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" onclick="switchTab('home-view')">Home</a></li>
+            <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('about-view')">About Us</a></li>
+          <!--  <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('metrics-view')">All Hospitals</a></li>-->
+        </ul>
+    </div>
+</nav>
+
+   
+<div class="container py-4" style = "text-align: left;">
+ <div class="mb-3">
+        <a href="{{ url_for('map_view') }}" class="btn brutal-btn" style = "background-color:#780000; color:white !important; ">← Back to Main Map</a>
+    </div>
+    <div class="p-4 mb-4">
+        <h1 id="hosp-name" class="text-dark mb-0">Loading Hospital Profile...</h1>
+        <p id="meta-sector-tag" class="text-muted fw-bold mb-3"></p>
+        <div class="row mt-2 justify-content-center">
+            <div class="col-md-3 col-6 border-end text-center"><small class="text-muted d-block">Total Reviews</small><strong id="meta-total-reviews" class="fs-5">-</strong></div>
+            <div class="col-md-3 col-6 border-end text-center"><small class="text-muted d-block">Negative Reviews Count</small><strong id="meta-neg-count" class="fs-5">-</strong></div>
+            <div class="col-md-3 col-6 text-center"><small class="text-muted d-block">Negative Review Ratio</small><strong id="meta-neg-ratio" class="fs-5">-</strong></div>
+        </div>
+    </div>
+        
+    <div class="row g-4 mb-4">
+    <div class="col-md-6 col-12">
+        <div class="p-4 border border-2 border-dark h-100">
+            <h4 class="fw-bold mb-3 text-dark">Hospital Operational Statistics</h4>
+            <div class="row g-3">
+                <div class="col-6">
+                    <small class="text-muted d-block">Beds Count</small>
+                    <strong id="meta-beds" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Marham Price</small>
+                    <strong id="stat-marham-price" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Primary Department</small>
+                    <strong id="stat-department" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">OPD Availability</small>
+                    <strong id="stat-opd" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Emergency Status</small>
+                    <strong id="stat-emergency" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Radiology Lab</small>
+                    <strong id="stat-radiology" class="fs-6 text-dark">-</strong>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted d-block">Histopathology Lab</small>
+                    <strong id="stat-histopathology" class="fs-6 text-dark">-</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-12">
+        <div class="p-4 border border-2  border-dark rounded bg-white h-100">
+            <h4 class="fw-bold mb-3 text-dark">Regulatory Statistics</h4>
+            
+            <div class="mb-4 pb-3 border-bottom">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="fw-bold text-dark me-2">PHC Zone Status:</span>
+                    <span id="stat-phc-zone" class="badge text-uppercase px-3 py-1 border" style="color:#000; background-color:#eee;">-</span>
+                </div>
+                <p id="stat-phc-desc" class="text-muted small mb-0 style-italic">Loading zone information...</p>
+            </div>
+
+            <div class = "mb-4 pb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                     <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span>
+</span>
+                     
+
+                </div>
+                    <div>
+                        <small id="stat-sehat-for" class="text-muted">-</small>
+                        <br>
+                        <br>
+                    </div>
+                    
+                <p class="text-muted small mb-0 style-italic"> Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital"> website</a>
+                    for the updated list of empaneled hospitals or contact the hospital directly to confirm the availibility of service. 
+                </p>
+
+            </div>
+            
+        </div>
+        
+    </div>
+</div>
+
+    <div class="row justify-content-center" >
+        <div class="col-lg-8 col-12" style="width:100%;">
+            <div class=" p-4">
+                
+                <div class="d-flex justify-content-between align-items-center border-dark pb-3 mb-3">
+                    <h5 id="chart-title" class="fw-bold mb-0">Theme Breakdown:</h5>
+                    <button id="btn-back-drill" class="btn btn-secondary btn-sm d-none" onclick="goBackToMajorChart()">← Back to Major Themes</button>
+                </div>
+
+                <div id="panel-major-chart">
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            <div class="chart-container my-3">
+                                <canvas id="majorChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-12 d-flex flex-column justify-content-start pt-3">
+                            <div class="review-box p-3 ">
+                                <h6 class="fw-bold text-dark">Representative Feedback:</h6>
+                                <p id="major-review" class="text-muted small italic">Hover over the pie chart to see more details.</p>
+                            </div>
+                            <div id="major-theme-details" class="p-3  mt-3 border">
+                                <h6 class="fw-bold text-dark">Description:</h6>
+                                <p id="major-details-content" class="text-muted small mb-0">Hover over the pie chart to see more details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-sub-chart" class="d-none">
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            <div class="chart-container my-3">
+                                <canvas id="subChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-12 d-flex flex-column justify-content-start pt-3">
+                            <div class="review-box p-3 ">
+                                <h6 class="fw-bold text-secondary">Department Specific Feedback:</h6>
+                                <p id="sub-review" class="text-muted small italic">Hover over the minor sub-theme elements to see department specific details.</p>
+                            </div>
+                            <div id="sub-theme-details" class="p-3  mt-3 border">
+                                <h6 class="fw-bold text-dark">Sub-Theme Details</h6>
+                                <p id="sub-details-content" class="text-muted small mb-0">Hover over the minor sub-theme elements to see department specific details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class=" py-3 mt-auto view-section" id="home-footer" style="background-color:#003049; color:white;">
+    <div class="container text-center">
+        <span class="fw-bold small"> Hospital Nama | 2026 </span>
+        <p class = "small"> Any data on this website is provided solely for informational purposes, not for medical advice.</p>
+        <p class = "small">Email: haspatalnama@gmail.com</p>
+    </div>
+</footer>
+
+<script>
+const targetHospId = "{{ hosp_id }}";
+let currentHospitalSector = "Unknown";
+
+let majorChartInstance = null;
+let subChartInstance = null;
+let sectorBenchmarks = {}; // <-- Global store for calculated sector averages
+
+document.addEventListener("DOMContentLoaded", () => {
+    const cachedData = localStorage.getItem('hospitalDataset');
+    
+    if (cachedData) {
+        const hospitals = JSON.parse(cachedData);
+        // Compute benchmarks from the cached data
+        calculateGlobalBenchmarks(hospitals);
+        if (findAndProcess(hospitals)) return;
+    }
+    
+    fetch('/api/hospitals')
+        .then(res => res.json())
+        .then(data => { 
+            localStorage.setItem('hospitalDataset', JSON.stringify(data));
+            // Compute benchmarks from the freshly fetched data
+            calculateGlobalBenchmarks(data);
+            findAndProcess(data);
+        })
+        .catch(err => {
+            document.getElementById('hosp-name').innerText = "Error loading data from server.";
+            console.error(err);
+        });
+});
+
+// Helper function to calculate sector averages behind the scenes
+function calculateGlobalBenchmarks(hospitalData) {
+    let sectors = {};
+    hospitalData.forEach(h => {
+        let sec = h["Sector"] || "Unknown";
+        if (!sectors[sec]) {
+            sectors[sec] = { env: 0, beh: 0, money: 0, time: 0, mgmt: 0, proc: 0, count: 0 };
+        }
+        sectors[sec].env += h["Major Theme: enviornment (%)"] || 0;
+        sectors[sec].beh += h["Major Theme: behaviour (%)"] || 0;
+        sectors[sec].money += h["Major Theme: money (%)"] || 0;
+        sectors[sec].time += h["Major Theme: time (%)"] || 0;
+        sectors[sec].mgmt += h["Major Theme: management (%)"] || 0;
+        sectors[sec].proc += h["Major Theme: process specific (%)"] || 0;
+        sectors[sec].count++;
+    });
+
+    // Finalize averages map for easy lookup
+    for (let sec in sectors) {
+        let count = sectors[sec].count;
+        sectorBenchmarks[sec] = {
+            "Environment": (sectors[sec].env / count).toFixed(1),
+            "Behaviour": (sectors[sec].beh / count).toFixed(1),
+            "Money": (sectors[sec].money / count).toFixed(1),
+            "Time": (sectors[sec].time / count).toFixed(1),
+            "Management": (sectors[sec].mgmt / count).toFixed(1),
+            "Department Related": (sectors[sec].proc / count).toFixed(1)
+        };
+    }
+}
+
+// 1. Handwrite your descriptions here
+const themeDescriptions = {
+    "Environment": "This theme contains complaints relating to the location, atmosphere and accessibility of the building. This may include cleanliness complaints, parking availibility, or hygiene issues.",
+    "Behaviour": "This theme contains complaints relating to the attitude, empathy and politeness of the staff towards patients and their professionalism.",
+    "Money": "This theme contains complaints relating to how expensive patients percieve a hospital to be and whether they take advantange of patients for profit.   ",
+    "Time": "This theme contains complaints relating to patients having to wait long times in queues, for tokens, treatments and for call responses.",
+    "Management": "This theme contains complaints relating to the overall management of the hospital, which includes their skills and level of training. This includes complaints relating to doctors, janitorial staff, nurses and doctors.",
+    "Department Related": "This theme contains complaints relating to a specific department of a hospital. This includes cardiology, oncology, and gynaecology among others."
+};
+
+// Helper function to handle flexible ID names (id, ID, Hospital Name, or array index)
+function findAndProcess(hospitals) {
+    const found = hospitals.find(
+        h => String(h.id || h.ID) === String(targetHospId)
+    );
+
+    if (found) {
+        processTargetPayload(found);
+        return true;
+    }
+
+    document.getElementById('hosp-name').innerText =
+        `Hospital ID ${targetHospId} not found in your dataset.`;
+
+    return false;
+}
+
+function processTargetPayload(hosp) {
+    if(!hosp) {
+        document.getElementById('hosp-name').innerText = "Hospital profile data match error.";
+        return;
+    }
+
+    // Save current sector for benchmark lookups during chart hovers
+    currentHospitalSector = hosp["Sector"] || "Unknown";
+
+    // Bind Metadata Header Elements...
+    document.getElementById('hosp-name').innerText = hosp["Hospital Name"];
+    document.getElementById('meta-sector-tag').innerText = (hosp["Sector"] || "Sector N/A") + (hosp["Teaching Hospital "] === "Yes" ? " • Teaching Facility" : "");
+    document.getElementById('meta-total-reviews').innerText = hosp["Total Reviews (All Stars)"] || "0";
+    document.getElementById('meta-neg-count').innerText = hosp["Negative Reviews Count (1-3 Stars)"] || "0";
+    document.getElementById('meta-neg-ratio').innerText = (hosp["Negative Reviews Ratio (%)"] || 0) + "%";
+    
+    // Core Operational Elements Map
+    document.getElementById('meta-beds').innerText = hosp["Beds"] || "N/A";
+    document.getElementById('stat-marham-price').innerText = hosp["Marham Price"] || "N/A";
+    document.getElementById('stat-department').innerText = hosp["Department"] || "N/A";
+    document.getElementById('stat-opd').innerText = hosp["OPD"] || "N/A";
+    document.getElementById('stat-emergency').innerText = hosp["Emergency"] || "N/A";
+    document.getElementById('stat-radiology').innerText = hosp["Radiology Lab"] || "N/A";
+    document.getElementById('stat-histopathology').innerText = hosp["Histopathy Lab"] || "N/A";
+
+    // Sehat-Card Structural Integration
+    document.getElementById('stat-sehat-empaneled').innerText = hosp["Sehat-Card Empaneled"] || "No";
+    const empaneled = String(hosp["Sehat-Card Empaneled"] || "").trim();
+const sehatCoverage = String(hosp["SCE For What"] || "").trim();
+
+document.getElementById("stat-sehat-empaneled").innerText =
+    empaneled || "No";
+
+document.getElementById("stat-sehat-for").innerText =
+    empaneled.toLowerCase() === "yes" && sehatCoverage
+        ? `Coverage: ${sehatCoverage}`
+        : "";
+
+    // --- Dynamic PHC Zone Text & Style Configurations ---
+    const phcZoneValue = (hosp["PHC Zone"] || "").toLowerCase().trim();
+    const phcBadge = document.getElementById('stat-phc-zone');
+    const phcDesc = document.getElementById('stat-phc-desc');
+
+    phcBadge.innerText = hosp["PHC Zone"] || "Not Tracked";
+
+    // Custom Switch Statement to change description block and color theme dynamically
+    switch(phcZoneValue) {
+        case 'green':
+            phcBadge.style.backgroundColor = "#d1e7dd";
+            phcBadge.style.color = "#0f5132";
+            phcDesc.innerText = "Green status indicates good complaince of MSDS. The hospital meets the basic benchmark of quality.";
+            break;
+        case 'blue':
+            phcBadge.style.backgroundColor = "#cfe2ff";
+            phcBadge.style.color = "#084298";
+            phcDesc.innerText = "Blue status indicates an MSDS compliance score of 70% and above but do not have a license yet. These hospitals can enter the Green zone with some effort.";
+            break;
+        case 'renewal':
+            phcBadge.style.backgroundColor = "#fff3cd";
+            phcBadge.style.color = "#664d03";
+            phcDesc.innerText = "Renewal status indicates that the hospital was Green (good complaince with MSDS) but needs to get its license renewed.";
+            break;
+        case 'grey':
+            phcBadge.style.backgroundColor = "#f8f9fa";
+            phcBadge.style.color = "#212529";
+            phcDesc.innerText = "Grey status indicates an uninspected healthcare facility. The MSDS complaince status of this hospital is unknown.";
+            break;
+        case 'red':
+            phcBadge.style.backgroundColor = "#f8d7da";
+            phcBadge.style.color = "#842029";
+            phcDesc.innerText = "Red status indicates a MSDS compliance score of 49% and below. This hospital has poor quality of care and compromised patient safety.";
+            break;
+        default:
+            phcBadge.style.backgroundColor = "#e2e3e5";
+            phcBadge.style.color = "#41464b";
+            phcDesc.innerText = "No localized diagnostic records could categorize this hospital's precise operational zone metric at this time.";
+            break;
+    }
+
+    // --- SETUP MAJOR CHART DATA ---
+    const majorLabels = ["Environment", "Behaviour", "Money", "Time", "Management", "Department Related"];
+    const majorValues = [
+        hosp["Major Theme: enviornment (%)"], hosp["Major Theme: behaviour (%)"], hosp["Major Theme: money (%)"],
+        hosp["Major Theme: time (%)"], hosp["Major Theme: management (%)"], hosp["Major Theme: process specific (%)"]
+    ];
+    const majorDocs = [
+        hosp["Representative Docs (Major): enviornment"], hosp["Representative Docs (Major): behaviour"], hosp["Representative Docs (Major): money"],
+        hosp["Representative Docs (Major): time"], hosp["Representative Docs (Major): management"], "" 
+    ];
+
+    buildMajorThemesChart(majorLabels, majorValues, majorDocs);
+}
+
+function buildMajorThemesChart(labels, dataValues, documentationTexts) {
+    let activeLabels = []; let activeValues = []; let activeDocs = [];
+    for(let i=0; i < dataValues.length; i++) {
+        if((dataValues[i] || 0) > 0) {
+            activeLabels.push(labels[i]); activeValues.push(dataValues[i]); activeDocs.push(documentationTexts[i]);
+        }
+    }
+
+    const ctx = document.getElementById('majorChart').getContext('2d');
+    majorChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: activeLabels,
+            datasets: [{
+                data: activeValues,
+                backgroundColor: ['#bf3100', '#d76a03', '#ec9f05', '#f5bb00', '#8ea604', '#168aad']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'bottom' } },
+            onHover: (event, chartElements) => {
+                const box = document.getElementById('major-review');
+                const detailsBox = document.getElementById('major-details-content');
+                
+                if (chartElements && chartElements.length > 0) {
+                    const idx = chartElements[0].index;
+                    const name = activeLabels[idx];
+                    
+                    // 1. Fetch benchmark information if available
+                    let benchmarkText = "";
+                    let inlineBenchmark = "";
+                    
+                    if (sectorBenchmarks[currentHospitalSector] && sectorBenchmarks[currentHospitalSector][name]) {
+                        const avg = sectorBenchmarks[currentHospitalSector][name];
+                        inlineBenchmark = ` | Sector Average: ${avg}%`;
+                    }
+                    
+                    // 2. Update the Description box text dynamically with benchmark stats
+                    if (themeDescriptions[name]) {
+                        detailsBox.innerHTML = `${themeDescriptions[name]} ${benchmarkText}`;
+                    }
+
+                    // 3. Updated feedback box processing
+                    if(name === "Department Related") {
+                        box.innerHTML = `<strong class="text-dark">Department Specific Complaints${inlineBenchmark}</strong><br><span class="text-dark">Click this slice to see details about specific departments.</span>`;
+                    } else {
+                        // Added ${inlineBenchmark} inside the <strong> header string template
+                        box.innerHTML = `<strong>${name} (${activeValues[idx]}%${inlineBenchmark}):</strong><br><span class="text-dark">"${activeDocs[idx] || 'No documentation entry saved.'}"</span>`;
+                    }
+                } else {
+                    // Reset to instructions if user hovers away completely
+                    detailsBox.textContent = "Hover over the pie chart to see more details.";
+                }
+            },
+            onClick: (event, chartElements) => {
+                if (chartElements && chartElements.length > 0) {
+                    const idx = chartElements[0].index;
+                    if(activeLabels[idx] === "Department Related") {
+                        document.getElementById('panel-major-chart').classList.add('d-none');
+                        document.getElementById('panel-sub-chart').classList.remove('d-none');
+                        document.getElementById('btn-back-drill').classList.remove('d-none');
+                        document.getElementById('chart-title').innerText = "Specific Department Themes";
+                    }
+                }
+            }
+        }
+    });
+}
+
+function buildSubThemesChart(labels, dataValues, documentationTexts) {
+    let activeLabels = []; let activeValues = []; let activeDocs = [];
+    for(let i=0; i < dataValues.length; i++) {
+        if((dataValues[i] || 0) > 0) {
+            activeLabels.push(labels[i]); activeValues.push(dataValues[i]); activeDocs.push(documentationTexts[i]);
+        }
+    }
+
+    const ctx = document.getElementById('subChart').getContext('2d');
+    subChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: activeLabels,
+            datasets: [{
+                data: activeValues,
+                backgroundColor: [
+                    '#a2c6e0', '#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1e88e5', 
+                    '#1976d2', '#1565c0', '#0d47a1', '#063173', '#06234f', '#050f2e', '#fffff'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'bottom' } },
+            onHover: (event, chartElements) => {
+                const box = document.getElementById('sub-review');
+                if (chartElements && chartElements.length > 0) {
+                    const idx = chartElements[0].index;
+                    box.innerHTML = `<strong>${activeLabels[idx]} (${activeValues[idx]}%):</strong><br><span class="text-dark">"${activeDocs[idx] || 'No matching sub-theme review document sample found.'}"</span>`;
+                }
+            }
+        }
+    });
+}
+
+function goBackToMajorChart() {
+    document.getElementById('panel-sub-chart').classList.add('d-none');
+    document.getElementById('panel-major-chart').classList.remove('d-none');
+    document.getElementById('btn-back-drill').classList.add('d-none');
+
+    document.getElementById('chart-title').innerText = 'Theme Breakdown';
+    document.getElementById('major-review').innerText = 'Hover over the pie chart to see more details.';
+    document.getElementById('major-details-content').innerText = 'Hover over the pie chart to see more details.';
+}</script>
+</body>
+</html>

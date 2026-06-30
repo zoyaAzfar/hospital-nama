@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Nama | ہسپتال نامہ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+
+    <style>
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            background-color: #ffffff; 
+            font-family: "Noto Sans";
+            color: #000;
+        }
+        
+        .brutal-border {
+            border: 2px solid #000;
+            border-radius: 5px !important; /* Sharp edges */
+            background-color: #fff;
+        }
+
+        .brutal-input {
+            border: 2px solid #000;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .brutal-input:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .brutal-btn {
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            border-radius: 0px;
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+        }
+        .brutal-btn:hover {
+            background-color: #000;
+            color: #fff;
+            transform: translate(3px, 3px);
+        }
+
+        .navbar { border-bottom: 2px solid #000; }
+        .nav-link { color: #000 !important; font-weight: 500; cursor: pointer; }
+        .nav-link:hover { text-decoration: underline; }
+
+        /* Scrollbar styling for the sidebar */
+        .scrollable-sidebar {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Map fixes */
+        #map { height: calc(100vh - 120px); width: 100%; }
+
+
+        footer { border-top: 2px solid #000; }
+
+        .hero-bg {
+        /* Replace with your image path */
+        /*background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('/static/lahore_image.jpg'); */
+        
+        /* This ensures the image covers the entire section nicely */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        
+        /* Optional: gives the background corners a smooth finish matching bootstrap styles */
+        border-radius: 8px; 
+        max-width: 1400px; 
+        width: 100%;
+        margin: 0 auto;
+        }
+                                                     
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+
+<nav class="navbar navbar-expand-lg px-4 py-3 " style = "background-color:#003049;" >
+    <span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" onclick="switchTab('home-view')" >Hospital Nama | ہسپتال نامہ</span>
+    <div class="ms-auto">
+        <ul class="navbar-nav flex-row gap-4 ">
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" onclick="switchTab('home-view')">Home</a></li>
+            <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('about-view')">About Us</a></li>
+          <!--  <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('metrics-view')">All Hospitals</a></li>-->
+        </ul>
+    </div>
+</nav>
+
+
+<main class="flex-shrink-0 flex-grow-1" >
+
+<div id="home-view" class="container h-100 d-flex flex-column justify-content-center align-items-center view-section hero-bg" style="min-height: 70vh;">        <h1 class="fw-bold mb-3 text-center display-8">Find and compare the right hospitals.</h1>
+        <p class="mb-5 text-center fs-10 w-50">Compare facilities, check drive times, and learn more about the hospitals within your radius instantly.</p>
+        
+        <div class="w-100 p-4 text-center">
+            <label class="form-label fw-bold mb-2 ">Enter your location:</label>
+            
+            <div class="d-flex align-items-stretch mx-auto position-relative" style="max-width: 800px;">
+            <input type="text" id="home-location-search" class="form-control brutal-input" placeholder="e.g. DHA Phase 5...">
+            <button id="home-search-btn" class="btn btn-dark brutal-input" type="button" style="background-color:#780000; margin-left: -10px; z-index: 5; width:100px;"><span class="material-symbols-outlined">search</span></button>
+                </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class=" py-3 mt-auto" id="home-footer" style="background-color:#003049; color:white;">
+    <div class="container text-center">
+        <span class="fw-bold small"> Hospital Nama | 2026 </span>
+        <p class = "small"> Any data on this website is provided solely for informational purposes, not for medical advice.</p>
+        <p class = "small">Email: haspatalnama@gmail.com</p>
+    </div>
+</footer>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPWVWPd8-PeC5BYD6w6CzUN6kq1O7XVg4&v=weekly&libraries=places"></script>
+<script>
+const lahoreBounds = {
+    north: 31.65, south: 31.25, west: 74.05, east: 74.55
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    const homeSearchInput = document.getElementById('home-location-search');
+    if (homeSearchInput) {
+        setupAutocomplete(homeSearchInput);
+    }
+});
+
+function setupAutocomplete(inputEl) {
+    if (!inputEl) return;
+    
+    // Set up Google Autocomplete restricted to Lahore
+    const ac = new google.maps.places.Autocomplete(inputEl, {
+        bounds: lahoreBounds, 
+        strictBounds: true, 
+        fields: ['geometry', 'name']
+    });
+
+    // Handle redirection with data parameters
+    function handlePlaceSelection(place, currentInputValue) {
+        if (!place || !place.geometry || !place.geometry.location) return;
+
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        
+        // Pass coordinates to your Flask route via URL Query Parameters
+        window.location.href = `/map?lat=${lat}&lng=${lng}&search=${encodeURIComponent(currentInputValue)}`;
+    }
+
+    // Event 1: User selects an option from the dropdown menu
+    ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        handlePlaceSelection(place, inputEl.value);
+    });
+
+    // Event 2: User explicitly clicks the red Search button magnifying glass
+    const searchBtn = document.getElementById('home-search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const place = ac.getPlace();
+            if (place && place.geometry) {
+                handlePlaceSelection(place, inputEl.value);
+            } else {
+                alert("Please select a valid location from the dropdown suggestions.");
+            }
+        });
+    }
+}
+</script>
+</body>
+</html>

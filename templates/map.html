@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map | Hospital Nama | ہسپتال نامہ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+
+    <style>
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            background-color: #ffffff; 
+            font-family: "Noto Sans";
+            color: #000;
+        }
+        
+        .brutal-border {
+            border: 2px solid #000;
+            border-radius: 5px !important; /* Sharp edges */
+            background-color: #fff;
+        }
+
+        .brutal-input {
+            border: 2px solid #000;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .brutal-input:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .brutal-btn {
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            border-radius: 0px;
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+        }
+        .brutal-btn:hover {
+            background-color: #000;
+            color: #fff;
+            transform: translate(3px, 3px);
+        }
+
+        .navbar { border-bottom: 2px solid #000; }
+        .nav-link { color: #000 !important; font-weight: 500; cursor: pointer; }
+        .nav-link:hover { text-decoration: underline; }
+
+        /* Scrollbar styling for the sidebar */
+        .scrollable-sidebar {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Map fixes */
+        #map { height: calc(100vh - 120px); width: 100%; }
+
+
+        footer { border-top: 2px solid #000; }
+
+        .hero-bg {
+        /* Replace with your image path */
+        /*background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('/static/lahore_image.jpg'); */
+        
+        /* This ensures the image covers the entire section nicely */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        
+        /* Optional: gives the background corners a smooth finish matching bootstrap styles */
+        border-radius: 8px; 
+        max-width: 1400px; 
+        width: 100%;
+        margin: 0 auto;
+        }
+                                                      
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+    
+
+<nav class="navbar navbar-expand-lg px-4 py-3 " style = "background-color:#003049;" >
+    <span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" onclick="switchTab('home-view')" >Hospital Nama | ہسپتال نامہ</span>
+    <div class="ms-auto">
+        <ul class="navbar-nav flex-row gap-4 ">
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" onclick="switchTab('home-view')">Home</a></li>
+            <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('about-view')">About Us</a></li>
+          <!--  <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('metrics-view')">All Hospitals</a></li>-->
+        </ul>
+    </div>
+</nav>
+
+
+        <div id="map-view" class="container-fluid mt-3 view-section">
+        <div class="row px-2">
+            
+            <div class="col-lg-8 mb-3">
+                <div class="brutal-border p-1 h-100">
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 scrollable-sidebar">
+                
+                <div class="brutal-border p-3 mb-4">
+                    <h5 class="fw-bold border-dark pb-2 mb-3">Location & Distance</h5>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Edit Location</label>
+                        <input type="text" id="sidebar-location-search" class="form-control brutal-input form-control-sm" placeholder="Search Lahore locations...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold d-flex justify-content-between">
+                            <span>Search Radius</span>
+                            <strong id="radius-val">10 km</strong>
+                        </label>
+                        <input type="range" class="form-range" id="radius-slider" min="1" max="30" value="10">
+                    </div>
+                    <button class="btn brutal-btn w-100" id="btn-get-recs">Get Recommendations</button>
+                </div>
+                
+                <div class="brutal-border p-3 mb-4">
+                    <h5 class="fw-bold border-dark pb-2 mb-3">Compare Hospitals</h5>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <select id="compare-1" class="form-select brutal-input"><option value="">Hospital A</option></select>
+                        </div>
+                        <div class="col-6">
+                            <select id="compare-2" class="form-select brutal-input"><option value="">Hospital B</option></select>
+                        </div>
+                    </div>
+                    <div id="comparison-result" class="table-responsive d-none">
+                        <table class="table table-bordered border-dark table-sm small">
+                            <thead class="table-dark text-white">
+                                <tr>
+                                    <th>Metric</th>
+                                    <th id="comp-header-1">Hospital A</th>
+                                    <th id="comp-header-2">Hospital B</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-rows"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="brutal-border p-3 mb-4">
+                    <h5 class="fw-bold border-dark pb-2 mb-3">Nearest Hospitals</h5>
+                    <div class="list-group list-group-flush" id="ranking-list">
+                        </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
+
+<footer class=" py-3 mt-auto" id="home-footer" style="background-color:#003049; color:white;">
+    <div class="container text-center">
+        <span class="fw-bold small"> Hospital Nama | 2026 </span>
+        <p class = "small"> Any data on this website is provided solely for informational purposes, not for medical advice.</p>
+        <p class = "small">Email: haspatalnama@gmail.com</p>
+    </div>
+</footer>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPWVWPd8-PeC5BYD6w6CzUN6kq1O7XVg4&v=weekly&libraries=marker,places"></script>
+
+<script>
+// --- STATE VARIABLES ---
+let map, userMarker, radiusCircle, infoWindow;
+let distanceMatrixService;
+let hospitalData = [];
+let mapMarkers = [];
+let mapInitialized = false;
+
+// Default to central Lahore if no parameters are provided
+let userLocation = { lat: 31.5204, lng: 74.3587 }; 
+const lahoreBounds = { north: 31.65, south: 31.25, west: 74.05, east: 74.55 };
+
+// --- READ INCOMING URL PARAMETERS ---
+const urlParams = new URLSearchParams(window.location.search);
+const latParam = parseFloat(urlParams.get('lat'));
+const lngParam = parseFloat(urlParams.get('lng'));
+const searchParam = urlParams.get('search');
+
+if (!isNaN(latParam) && !isNaN(lngParam)) {
+    userLocation = { lat: latParam, lng: lngParam };
+}
+
+// --- INITIALIZATION ON LOAD ---
+document.addEventListener("DOMContentLoaded", () => {
+    // Fill the sidebar search input with the text typed on the homepage, if available
+    if (searchParam) {
+        document.getElementById('sidebar-location-search').value = searchParam;
+    }
+
+    // Load hospital data from your backend API
+    fetch('/api/hospitals')
+        .then(res => res.json())
+        .then(data => {
+            hospitalData = data;
+            localStorage.setItem('hospitalDataset', JSON.stringify(data));
+            
+            // Set up UI components now that data is loaded
+            populateComparisonDropdowns();
+            initGoogleMap();
+            filterAndRenderData();
+        }).catch(err => {
+            console.error("Error loading /api/hospitals:", err);
+            initGoogleMap(); // Fallback map render even if API fails
+        });
+
+    // Listen for radius changes
+    document.getElementById('radius-slider').addEventListener('input', (e) => {
+        document.getElementById('radius-val').innerText = e.target.value + " km";
+        filterAndRenderData();
+    });
+
+    // Recommendations placeholder hook
+    document.getElementById('btn-get-recs').addEventListener('click', () => {
+        alert("Recommendation logic coming soon!");
+    });
+});
+
+// --- GOOGLE MAPS SETUP ---
+function initGoogleMap() {
+    if (mapInitialized) return;
+
+    const poiHideStyles = [
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+        { featureType: 'poi.medical', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
+    ];
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: userLocation,
+        zoom: 12,
+        minZoom: 10,
+        restriction: { latLngBounds: lahoreBounds, strictBounds: true },
+        mapId: "fab6f0d541a614e815fd4bcf",
+        clickableIcons: false,
+        renderingType: 'RASTER', 
+        styles: poiHideStyles 
+    });
+
+    infoWindow = new google.maps.InfoWindow();
+    distanceMatrixService = new google.maps.DistanceMatrixService();
+
+    const userPin = new google.maps.marker.PinElement({ background: '#000', borderColor: '#fff', glyphColor: '#fff' });
+    userMarker = new google.maps.marker.AdvancedMarkerElement({
+        map: map, position: userLocation, content: userPin.element, title: "Your Location"
+    });
+
+    const initialRadiusMeters = parseInt(document.getElementById('radius-slider').value) * 1000;
+    radiusCircle = new google.maps.Circle({
+        map: map, center: userLocation, radius: initialRadiusMeters,
+        strokeColor: '#000000', strokeOpacity: 0.8, strokeWeight: 2,
+        fillColor: '#000000', fillOpacity: 0.05
+    });
+
+    // Set up autocomplete on the sidebar input field for subsequent searches
+    setupSidebarAutocomplete(document.getElementById('sidebar-location-search'));
+    
+    mapInitialized = true;
+}
+
+function setupSidebarAutocomplete(inputEl) {
+    if (!inputEl) return;
+    const ac = new google.maps.places.Autocomplete(inputEl, {
+        bounds: lahoreBounds, strictBounds: true, fields: ['geometry', 'name']
+    });
+
+    ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        if (!place || !place.geometry || !place.geometry.location) return;
+
+        userLocation = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+        
+        updateSpatialLayers();
+        filterAndRenderData();
+    });
+}
+
+function updateSpatialLayers() {
+    if (!mapInitialized) return;
+    const radiusMeters = parseInt(document.getElementById('radius-slider').value) * 1000;
+    userMarker.position = userLocation;
+    radiusCircle.setCenter(userLocation);
+    radiusCircle.setRadius(radiusMeters);
+    map.setCenter(userLocation);
+}
+
+function filterAndRenderData() {
+    if (!mapInitialized) return;
+    const targetRadiusKm = parseFloat(document.getElementById('radius-slider').value);
+    updateSpatialLayers();
+
+    // Clear old map markers
+    mapMarkers.forEach(m => m.map = null);
+    mapMarkers = [];
+
+    let preFilteredHospitals = [];
+    let destinations = [];
+
+    hospitalData.forEach(hosp => {
+        let lat = NaN, lng = NaN;
+        if (hosp.Coordinates && typeof hosp.Coordinates === 'string') {
+            const parts = hosp.Coordinates.split(',');
+            if (parts.length === 2) { lat = parseFloat(parts[0].trim()); lng = parseFloat(parts[1].trim()); }
+        }
+        if (isNaN(lat) || isNaN(lng)) return;
+        hosp.latitude = lat; hosp.longitude = lng;
+
+        const roughDistance = roughBirdDistance(userLocation, { lat, lng });
+        if (roughDistance <= targetRadiusKm) {
+            preFilteredHospitals.push(hosp);
+            destinations.push(new google.maps.LatLng(lat, lng));
+        }
+    });
+    
+    if (destinations.length === 0) { renderUIList([]); return; }
+
+    // Distance Matrix limits to maximum of 25 targets per request
+    const batchDestinations = destinations.slice(0, 25);
+    const batchHospitals = preFilteredHospitals.slice(0, 25);
+
+    distanceMatrixService.getDistanceMatrix({
+        origins: [userLocation],
+        destinations: batchDestinations,
+        travelMode: google.maps.TravelMode.DRIVING,
+        drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+    }, (response, status) => {
+        if (status !== google.maps.DistanceMatrixStatus.OK) return;
+
+        const results = response.rows[0].elements;
+        let finalRenderList = [];
+
+        batchHospitals.forEach((hosp, index) => {
+            const element = results[index];
+            if (element.status === "OK") {
+                hosp.roadDistanceText = element.distance.text;
+                hosp.roadDistanceValueKm = element.distance.value / 1000;
+                hosp.durationText = element.duration_in_traffic ? element.duration_in_traffic.text : element.duration.text;
+                hosp.durationSeconds = element.duration_in_traffic ? element.duration_in_traffic.value : element.duration.value;
+                finalRenderList.push(hosp);
+
+                // Dynamically color pins based on travel duration
+                let pinColor = "#2a9d8f"; 
+                const minutes = hosp.durationSeconds / 60;
+                if (minutes > 7 && minutes <= 15) pinColor = "#e9c46a"; 
+                if (minutes > 15) pinColor = "#e63946"; 
+
+                const hospitalPin = new google.maps.marker.PinElement({
+                    background: pinColor, borderColor: "#ffffff", glyphColor: "#ffffff"
+                });
+
+                const marker = new google.maps.marker.AdvancedMarkerElement({
+                    map: map, position: { lat: parseFloat(hosp.latitude), lng: parseFloat(hosp.longitude) },
+                    content: hospitalPin.element, title: hosp["Hospital Name"]
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.setContent(`
+                        <div style="color: black; padding: 5px; font-family: 'Noto Sans';">
+                            <h6 style="margin:0 0 5px 0; font-weight:bold;">${hosp["Hospital Name"]}</h6>
+                            <p style="margin:0 0 8px 0; font-size:0.85rem;">
+                                Road Distance: <b>${hosp.roadDistanceText}</b><br>
+                                Live Drive: <b>${hosp.durationText}</b>
+                            </p>
+                            <a href="/hospital/${hosp.id}" class="btn brutal-btn btn-sm w-100" style="font-size: 0.8rem;">View Details</a>
+                        </div>
+                    `);
+                    infoWindow.open(map, marker);
+                });
+                mapMarkers.push(marker);
+            }
+        });
+        finalRenderList.sort((a, b) => a.roadDistanceValueKm - b.roadDistanceValueKm);
+        renderUIList(finalRenderList);
+    });
+}
+
+function renderUIList(list) {
+    const container = document.getElementById('ranking-list');
+    if (!container) return;
+    container.innerHTML = list.length === 0 ? '<div class="text-muted p-3">No hospitals found within this scope.</div>' : '';
+    
+    list.forEach((h) => {
+        container.innerHTML += `
+            <div class="list-group-item d-flex justify-content-between align-items-center bg-white border border-dark mb-2 p-2" style="border-radius:5px;">
+                <div>
+                    <h6 class="mb-0 fw-bold small"><a href="/hospital/${h.id}" class="text-decoration-none text-dark">${h["Hospital Name"]}</a></h6>
+                    <small class="text-muted" style="font-size:0.75rem;">${h["Sector"]} | <span class="fw-bold text-dark">${h.durationText}</span></small>
+                </div>
+                <span class="badge bg-dark rounded-0 text-white small">${h.roadDistanceText}</span>
+            </div>`;
+    });
+}
+
+function roughBirdDistance(pt1, pt2) {
+    const R = 6371;
+    const dLat = (pt2.lat - pt1.lat) * Math.PI / 180;
+    const dLon = (pt2.lng - pt1.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(pt1.lat * Math.PI / 180) * Math.cos(pt2.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function populateComparisonDropdowns() {
+    const s1 = document.getElementById("compare-1");
+    const s2 = document.getElementById("compare-2");
+    if (!s1 || !s2) return;
+
+    // Reset dropdown configurations
+    s1.innerHTML = '<option value="">Select Hospital A</option>';
+    s2.innerHTML = '<option value="">Select Hospital B</option>';
+
+    hospitalData.forEach((h, idx) => {
+        s1.add(new Option(h["Hospital Name"], idx));
+        s2.add(new Option(h["Hospital Name"], idx));
+    });
+    s1.addEventListener("change", runComparison);
+    s2.addEventListener("change", runComparison);
+}
+
+function runComparison() {
+    const idx1 = document.getElementById("compare-1").value;
+    const idx2 = document.getElementById("compare-2").value;
+    const resultBox = document.getElementById("comparison-result");
+
+    if (!idx1 || !idx2) { resultBox.classList.add("d-none"); return; }
+    resultBox.classList.remove("d-none");
+    const h1 = hospitalData[idx1];
+    const h2 = hospitalData[idx2];
+
+    document.getElementById("comp-header-1").innerText = h1["Hospital Name"];
+    document.getElementById("comp-header-2").innerText = h2["Hospital Name"];
+
+    const metrics = [
+        ["Sector", "Sector", ""],
+        ["Beds Total", "Beds", ""],
+        ["Negative Review Ratio", "Negative Reviews Ratio (%)", "%"],
+        ['Teaching Hospital ', 'Teaching Hospital ', ""],
+        ['PHC Zone', 'PHC Zone', ""],
+        ['Approx. Price', 'Marham Price', ""],
+        ['OPD', "OPD", ''],
+        ['Emergency', 'Emergency', ""],
+        ['Radiology Lab', 'Radiology Lab', ''],
+        ['Histopathy Lab', 'Histopathy Lab', ''],
+        ['Sehat Card Available', 'Sehat-Card Empaneled', ''],
+    ];
+
+    const container = document.getElementById("comparison-rows");
+    container.innerHTML = "";
+    metrics.forEach(m => {
+        container.innerHTML += `<tr><td class="fw-bold">${m[0]}</td><td>${h1[m[1]] || 0}${m[2]}</td><td>${h2[m[1]] || 0}${m[2]}</td></tr>`;
+    });
+
+    container.innerHTML += `
+        <tr>
+            <td class="fw-bold">Sehat Card Services</td>
+            <td>${h1["Sehat-Card Empaneled"] === "Yes" ? (h1["SCE For What"] || "Not specified") : "-"}</td>
+            <td>${h2["Sehat-Card Empaneled"] === "Yes" ? (h2["SCE For What"] || "Not specified") : "-"}</td>
+        </tr>
+    `;
+}
+</script>
+
+</body>
+</html>

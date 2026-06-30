@@ -6,7 +6,6 @@ DB_FILE = "hospitals.db"
 
 MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "LOCAL_TEST_KEY")
 
-
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
@@ -14,8 +13,8 @@ def get_db_connection():
 
 @app.context_processor
 def inject_maps_key():
-    return dict(maps_api_key=MAPS_API_KEY)
-
+    return dict(maps_key=MAPS_API_KEY)
+    
 @app.route('/')
 def index():
     return render_template('index.html')

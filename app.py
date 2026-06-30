@@ -12,6 +12,10 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+@app.context_processor
+def inject_maps_key():
+    return dict(maps_api_key=MAPS_API_KEY)
+
 @app.route('/')
 def index():
     return render_template('index.html')

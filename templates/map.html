@@ -61,13 +61,9 @@
         /* Map fixes */
         #map { height: calc(100vh - 120px); width: 100%; }
 
-
         footer { border-top: 2px solid #000; }
 
         .hero-bg {
-        /* Replace with your image path */
-        /*background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('/static/lahore_image.jpg'); */
-        
         /* This ensures the image covers the entire section nicely */
         background-size: cover;
         background-position: center;
@@ -79,12 +75,11 @@
         width: 100%;
         margin: 0 auto;
         }
-                                                      
+                                                                      
     </style>
 </head>
 <body class="d-flex flex-column h-100">
     
-
 
 <nav class="navbar navbar-expand-lg px-4 py-3 " style = "background-color:#003049;" >
     <span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" href="/" >Hospital Nama | ہسپتال نامہ</span>
@@ -92,7 +87,6 @@
         <ul class="navbar-nav flex-row gap-4 ">
             <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/">Home</a></li>
             <li class="nav-item"><a class="nav-link" style="color:white !important;" href="/about">About Us</a></li>
-          <!--  <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('metrics-view')">All Hospitals</a></li>-->
         </ul>
     </div>
 </nav>
@@ -451,15 +445,14 @@ function runComparison() {
         ['Approx. Price', 'Marham Price', ""],
         ['OPD', "OPD", ''],
         ['Emergency', 'Emergency', ""],
-        ['Radiology Lab', 'Radiology Lab', ''],
-        ['Histopathy Lab', 'Histopathy Lab', ''],
+        ['Blood Bank', 'Blood Bank', ""],
         ['Sehat Card Available', 'Sehat-Card Empaneled', ''],
     ];
 
     const container = document.getElementById("comparison-rows");
     container.innerHTML = "";
     metrics.forEach(m => {
-        container.innerHTML += `<tr><td class="fw-bold">${m[0]}</td><td>${h1[m[1]] || 0}${m[2]}</td><td>${h2[m[1]] || 0}${m[2]}</td></tr>`;
+        container.innerHTML += `<tr><td class="fw-bold">${m[0]}</td><td>${h1[m[1]] || 'N/A'}${m[2]}</td><td>${h2[m[1]] || 'N/A'}${m[2]}</td></tr>`;
     });
 
     container.innerHTML += `

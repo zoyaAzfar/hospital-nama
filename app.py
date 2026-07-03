@@ -43,7 +43,7 @@ def get_hospitals():
     try:
         cursor = conn.cursor()
 
-        TABLE_NAME = "hospital_dataset_prices_updated"
+        TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)"
 
         # Get columns
         cursor.execute(f'PRAGMA table_info("{TABLE_NAME}")')

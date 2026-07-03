@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
 <style>
@@ -37,7 +36,6 @@ h1,h5,h6{font-weight:700}
         <ul class="navbar-nav flex-row gap-4 ">
             <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/">Home</a></li>
             <li class="nav-item"><a class="nav-link" style="color:white !important;" href="/about">About Us</a></li>
-          <!--  <li class="nav-item"><a class="nav-link" style="color:white !important;" onclick="switchTab('metrics-view')">All Hospitals</a></li>-->
         </ul>
     </div>
 </nav>
@@ -79,16 +77,12 @@ h1,h5,h6{font-weight:700}
                     <strong id="stat-opd" class="fs-6 text-dark">-</strong>
                 </div>
                 <div class="col-6">
-                    <small class="text-muted d-block">Emergency Status</small>
+                    <small class="text-muted d-block">Emergency Availability</small>
                     <strong id="stat-emergency" class="fs-6 text-dark">-</strong>
                 </div>
                 <div class="col-6">
-                    <small class="text-muted d-block">Radiology Lab</small>
-                    <strong id="stat-radiology" class="fs-6 text-dark">-</strong>
-                </div>
-                <div class="col-12">
-                    <small class="text-muted d-block">Histopathology Lab</small>
-                    <strong id="stat-histopathology" class="fs-6 text-dark">-</strong>
+                    <small class="text-muted d-block">Blood Bank Availability</small>
+                    <strong id="stat-blood-bank" class="fs-6 text-dark">-</strong>
                 </div>
             </div>
         </div>
@@ -108,10 +102,7 @@ h1,h5,h6{font-weight:700}
 
             <div class = "mb-4 pb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                     <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span>
-</span>
-                     
-
+                     <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span></span>
                 </div>
                     <div>
                         <small id="stat-sehat-for" class="text-muted">-</small>
@@ -120,7 +111,7 @@ h1,h5,h6{font-weight:700}
                     </div>
                     
                 <p class="text-muted small mb-0 style-italic"> Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital"> website</a>
-                    for the updated list of empaneled hospitals or contact the hospital directly to confirm the availibility of service. 
+                    for the updated list of empaneled hospitals or contact the hospital directly to confirm the availability of service. 
                 </p>
 
             </div>
@@ -198,14 +189,13 @@ let currentHospitalSector = "Unknown";
 
 let majorChartInstance = null;
 let subChartInstance = null;
-let sectorBenchmarks = {}; // <-- Global store for calculated sector averages
+let sectorBenchmarks = {}; 
 
 document.addEventListener("DOMContentLoaded", () => {
     const cachedData = localStorage.getItem('hospitalDataset');
     
     if (cachedData) {
         const hospitals = JSON.parse(cachedData);
-        // Compute benchmarks from the cached data
         calculateGlobalBenchmarks(hospitals);
         if (findAndProcess(hospitals)) return;
     }
@@ -214,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(res => res.json())
         .then(data => { 
             localStorage.setItem('hospitalDataset', JSON.stringify(data));
-            // Compute benchmarks from the freshly fetched data
             calculateGlobalBenchmarks(data);
             findAndProcess(data);
         })
@@ -224,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
-// Helper function to calculate sector averages behind the scenes
 function calculateGlobalBenchmarks(hospitalData) {
     let sectors = {};
     hospitalData.forEach(h => {
@@ -241,7 +229,6 @@ function calculateGlobalBenchmarks(hospitalData) {
         sectors[sec].count++;
     });
 
-    // Finalize averages map for easy lookup
     for (let sec in sectors) {
         let count = sectors[sec].count;
         sectorBenchmarks[sec] = {
@@ -255,17 +242,15 @@ function calculateGlobalBenchmarks(hospitalData) {
     }
 }
 
-// 1. Handwrite your descriptions here
 const themeDescriptions = {
-    "Environment": "This theme contains complaints relating to the location, atmosphere and accessibility of the building. This may include cleanliness complaints, parking availibility, or hygiene issues.",
+    "Environment": "This theme contains complaints relating to the location, atmosphere and accessibility of the building. This may include cleanliness complaints, parking availability, or hygiene issues.",
     "Behaviour": "This theme contains complaints relating to the attitude, empathy and politeness of the staff towards patients and their professionalism.",
-    "Money": "This theme contains complaints relating to how expensive patients percieve a hospital to be and whether they take advantange of patients for profit.   ",
+    "Money": "This theme contains complaints relating to how expensive patients perceive a hospital to be and whether they take advantage of patients for profit.   ",
     "Time": "This theme contains complaints relating to patients having to wait long times in queues, for tokens, treatments and for call responses.",
     "Management": "This theme contains complaints relating to the overall management of the hospital, which includes their skills and level of training. This includes complaints relating to doctors, janitorial staff, nurses and doctors.",
-    "Department Related": "This theme contains complaints relating to a specific department of a hospital. This includes cardiology, oncology, and gynaecology among others."
+    "Department Related": "This theme contains complaints relating to a specific department of a hospital. This includes cardiology, oncology, and gynaecology, among others."
 };
 
-// Helper function to handle flexible ID names (id, ID, Hospital Name, or array index)
 function findAndProcess(hospitals) {
     const found = hospitals.find(
         h => String(h.id || h.ID) === String(targetHospId)
@@ -288,51 +273,43 @@ function processTargetPayload(hosp) {
         return;
     }
 
-    // Save current sector for benchmark lookups during chart hovers
     currentHospitalSector = hosp["Sector"] || "Unknown";
 
-    // Bind Metadata Header Elements...
     document.getElementById('hosp-name').innerText = hosp["Hospital Name"];
     document.getElementById('meta-sector-tag').innerText = (hosp["Sector"] || "Sector N/A") + (hosp["Teaching Hospital "] === "Yes" ? " • Teaching Facility" : "");
     document.getElementById('meta-total-reviews').innerText = hosp["Total Reviews (All Stars)"] || "0";
     document.getElementById('meta-neg-count').innerText = hosp["Negative Reviews Count (1-3 Stars)"] || "0";
     document.getElementById('meta-neg-ratio').innerText = (hosp["Negative Reviews Ratio (%)"] || 0) + "%";
     
-    // Core Operational Elements Map
     document.getElementById('meta-beds').innerText = hosp["Beds"] || "N/A";
     document.getElementById('stat-marham-price').innerText = hosp["Marham Price"] || "N/A";
     document.getElementById('stat-department').innerText = hosp["Department"] || "N/A";
     document.getElementById('stat-opd').innerText = hosp["OPD"] || "N/A";
     document.getElementById('stat-emergency').innerText = hosp["Emergency"] || "N/A";
-    document.getElementById('stat-radiology').innerText = hosp["Radiology Lab"] || "N/A";
-    document.getElementById('stat-histopathology').innerText = hosp["Histopathy Lab"] || "N/A";
+    document.getElementById('stat-blood-bank').innerText = hosp["Blood Bank"] || "N/A";
 
-    // Sehat-Card Structural Integration
     document.getElementById('stat-sehat-empaneled').innerText = hosp["Sehat-Card Empaneled"] || "No";
     const empaneled = String(hosp["Sehat-Card Empaneled"] || "").trim();
-const sehatCoverage = String(hosp["SCE For What"] || "").trim();
+    const sehatCoverage = String(hosp["SCE For What"] || "").trim();
 
-document.getElementById("stat-sehat-empaneled").innerText =
-    empaneled || "No";
+    document.getElementById("stat-sehat-empaneled").innerText = empaneled || "No";
 
-document.getElementById("stat-sehat-for").innerText =
-    empaneled.toLowerCase() === "yes" && sehatCoverage
-        ? `Coverage: ${sehatCoverage}`
-        : "";
+    document.getElementById("stat-sehat-for").innerText =
+        empaneled.toLowerCase() === "yes" && sehatCoverage
+            ? `Coverage: ${sehatCoverage}`
+            : "";
 
-    // --- Dynamic PHC Zone Text & Style Configurations ---
     const phcZoneValue = (hosp["PHC Zone"] || "").toLowerCase().trim();
     const phcBadge = document.getElementById('stat-phc-zone');
     const phcDesc = document.getElementById('stat-phc-desc');
 
     phcBadge.innerText = hosp["PHC Zone"] || "Not Tracked";
 
-    // Custom Switch Statement to change description block and color theme dynamically
     switch(phcZoneValue) {
         case 'green':
             phcBadge.style.backgroundColor = "#d1e7dd";
             phcBadge.style.color = "#0f5132";
-            phcDesc.innerText = "Green status indicates good complaince of MSDS. The hospital meets the basic benchmark of quality.";
+            phcDesc.innerText = "Green status indicates good compliance of MSDS. The hospital meets the basic benchmark of quality.";
             break;
         case 'blue':
             phcBadge.style.backgroundColor = "#cfe2ff";
@@ -342,12 +319,12 @@ document.getElementById("stat-sehat-for").innerText =
         case 'renewal':
             phcBadge.style.backgroundColor = "#fff3cd";
             phcBadge.style.color = "#664d03";
-            phcDesc.innerText = "Renewal status indicates that the hospital was Green (good complaince with MSDS) but needs to get its license renewed.";
+            phcDesc.innerText = "Renewal status indicates that the hospital was Green (good compliance with MSDS) but needs to get its license renewed.";
             break;
         case 'grey':
             phcBadge.style.backgroundColor = "#f8f9fa";
             phcBadge.style.color = "#212529";
-            phcDesc.innerText = "Grey status indicates an uninspected healthcare facility. The MSDS complaince status of this hospital is unknown.";
+            phcDesc.innerText = "Grey status indicates an uninspected healthcare facility. The MSDS compliance status of this hospital is unknown.";
             break;
         case 'red':
             phcBadge.style.backgroundColor = "#f8d7da";
@@ -361,7 +338,6 @@ document.getElementById("stat-sehat-for").innerText =
             break;
     }
 
-    // --- SETUP MAJOR CHART DATA ---
     const majorLabels = ["Environment", "Behaviour", "Money", "Time", "Management", "Department Related"];
     const majorValues = [
         hosp["Major Theme: enviornment (%)"], hosp["Major Theme: behaviour (%)"], hosp["Major Theme: money (%)"],
@@ -405,8 +381,6 @@ function buildMajorThemesChart(labels, dataValues, documentationTexts) {
                     const idx = chartElements[0].index;
                     const name = activeLabels[idx];
                     
-                    // 1. Fetch benchmark information if available
-                    let benchmarkText = "";
                     let inlineBenchmark = "";
                     
                     if (sectorBenchmarks[currentHospitalSector] && sectorBenchmarks[currentHospitalSector][name]) {
@@ -414,20 +388,16 @@ function buildMajorThemesChart(labels, dataValues, documentationTexts) {
                         inlineBenchmark = ` | Sector Average: ${avg}%`;
                     }
                     
-                    // 2. Update the Description box text dynamically with benchmark stats
                     if (themeDescriptions[name]) {
-                        detailsBox.innerHTML = `${themeDescriptions[name]} ${benchmarkText}`;
+                        detailsBox.innerHTML = `${themeDescriptions[name]}`;
                     }
 
-                    // 3. Updated feedback box processing
                     if(name === "Department Related") {
                         box.innerHTML = `<strong class="text-dark">Department Specific Complaints${inlineBenchmark}</strong><br><span class="text-dark">Click this slice to see details about specific departments.</span>`;
                     } else {
-                        // Added ${inlineBenchmark} inside the <strong> header string template
                         box.innerHTML = `<strong>${name} (${activeValues[idx]}%${inlineBenchmark}):</strong><br><span class="text-dark">"${activeDocs[idx] || 'No documentation entry saved.'}"</span>`;
                     }
                 } else {
-                    // Reset to instructions if user hovers away completely
                     detailsBox.textContent = "Hover over the pie chart to see more details.";
                 }
             },

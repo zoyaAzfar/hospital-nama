@@ -121,26 +121,10 @@
                 
                 <div class="brutal-border p-3 mb-4">
                     <h5 class="fw-bold border-dark pb-2 mb-3">Compare Hospitals</h5>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <select id="compare-1" class="form-select brutal-input"><option value="">Hospital A</option></select>
+                    <p class="small text-muted mb-2">Select up to 3 hospitals to compare.</p>
+                    <div id="selected-compare-list" class="mb-3 d-flex flex-column gap-2">
                         </div>
-                        <div class="col-6">
-                            <select id="compare-2" class="form-select brutal-input"><option value="">Hospital B</option></select>
-                        </div>
-                    </div>
-                    <div id="comparison-result" class="table-responsive d-none">
-                        <table class="table table-bordered border-dark table-sm small">
-                            <thead class="table-dark text-white">
-                                <tr>
-                                    <th>Metric</th>
-                                    <th id="comp-header-1">Hospital A</th>
-                                    <th id="comp-header-2">Hospital B</th>
-                                </tr>
-                            </thead>
-                            <tbody id="comparison-rows"></tbody>
-                        </table>
-                    </div>
+                    <button class="btn brutal-btn w-100 d-none" id="btn-go-compare" onclick="window.location.href='/compare'">Go to Compare</button>
                 </div>
 
                 <div class="brutal-border p-3 mb-4">
@@ -172,11 +156,70 @@ let distanceMatrixService;
 let hospitalData = [];
 let mapMarkers = [];
 let mapInitialized = false;
+let selectedForCompare = JSON.parse(localStorage.getItem('compareList')) || [];
 
 // Default to central Lahore if no parameters are provided
 let userLocation = { lat: 31.5204, lng: 74.3587 }; 
 const lahoreBounds = { north: 31.65, south: 31.25, west: 74.05, east: 74.55 };
 
+
+// Function to add/remove a hospital from the compare list
+window.toggleCompare = function(id) {
+    // Find if it's already selected
+    const existingIndex = selectedForCompare.findIndex(h => h.id == id);
+    
+    if (existingIndex > -1) {
+        // Remove it
+        selectedForCompare.splice(existingIndex, 1);
+    } else {
+        // Add it (limit to 3)
+        if (selectedForCompare.length >= 3) {
+            alert("You can only select up to 3 hospitals to compare.");
+            return;
+        }
+        const hosp = hospitalData.find(h => h.id == id);
+        if (hosp) selectedForCompare.push(hosp);
+    }
+    
+    // Save to local storage
+    localStorage.setItem('compareList', JSON.stringify(selectedForCompare));
+    
+    // Update the UI
+    updateCompareUI();
+    filterAndRenderData(); // Re-renders the map list to update button states
+};
+
+// Function to update the sidebar compare tracker
+function updateCompareUI() {
+    const listContainer = document.getElementById('selected-compare-list');
+    const goBtn = document.getElementById('btn-go-compare');
+    
+    if (!listContainer || !goBtn) return;
+    
+    listContainer.innerHTML = '';
+    
+    if (selectedForCompare.length === 0) {
+        goBtn.classList.add('d-none');
+    } else {
+        selectedForCompare.forEach(h => {
+            listContainer.innerHTML += `
+                <div class="d-flex justify-content-between align-items-center bg-light border border-dark p-2" style="border-radius: 3px;">
+                    <span class="small fw-bold text-truncate" style="max-width: 80%;">${h["Hospital Name"]}</span>
+                    <button class="btn btn-sm btn-danger py-0 px-2 border border-dark" onclick="toggleCompare('${h.id}')">&times;</button>
+                </div>
+            `;
+        });
+        
+        // Show button only if 2 or 3 are selected
+        if (selectedForCompare.length >= 2) {
+            goBtn.classList.remove('d-none');
+            goBtn.innerText = `Compare (${selectedForCompare.length})`;
+        } else {
+            goBtn.classList.add('d-none');
+        }
+    }
+}
+    
 // --- READ INCOMING URL PARAMETERS ---
 const urlParams = new URLSearchParams(window.location.search);
 const latParam = parseFloat(urlParams.get('lat'));
@@ -202,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem('hospitalDataset', JSON.stringify(data));
             
             // Set up UI components now that data is loaded
-            populateComparisonDropdowns();
             initGoogleMap();
             filterAndRenderData();
         }).catch(err => {
@@ -396,17 +438,25 @@ function renderUIList(list) {
     container.innerHTML = list.length === 0 ? '<div class="text-muted p-3">No hospitals found within this scope.</div>' : '';
     
     list.forEach((h) => {
+        const isSelected = selectedForCompare.some(sh => sh.id == h.id);
+        const btnText = isSelected ? "Selected" : "Select";
+        const btnClass = isSelected ? "bg-dark text-white" : "bg-white text-dark";
+
         container.innerHTML += `
-            <div class="list-group-item d-flex justify-content-between align-items-center bg-white border border-dark mb-2 p-2" style="border-radius:5px;">
-                <div>
-                    <h6 class="mb-0 fw-bold small"><a href="/hospital/${h.id}" class="text-decoration-none text-dark">${h["Hospital Name"]}</a></h6>
-                    <small class="text-muted" style="font-size:0.75rem;">${h["Sector"]} | <span class="fw-bold text-dark">${h.durationText}</span></small>
+            <div class="list-group-item d-flex flex-column bg-white border border-dark mb-2 p-3" style="border-radius:10px;">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <h6 class="mb-0 fw-bold small"><a href="/hospital/${h.id}" class="text-decoration-none text-dark">${h["Hospital Name"]}</a></h6>
+                        <small class="text-muted" style="font-size:0.75rem;">${h["Sector"]} | <span class="fw-bold text-dark">${h.durationText}</span></small>
+                    </div>
+                    <span class="badge bg-dark rounded-0 text-white small">${h.roadDistanceText}</span>
                 </div>
-                <span class="badge bg-dark rounded-0 text-white small">${h.roadDistanceText}</span>
+                <button onclick="toggleCompare('${h.id}')" class="btn brutal-btn btn-sm mt-2 w-100 ${btnClass}" style="font-size: 0.8rem;">
+                    ${btnText}
+                </button>
             </div>`;
     });
 }
-
 function roughBirdDistance(pt1, pt2) {
     const R = 6371;
     const dLat = (pt2.lat - pt1.lat) * Math.PI / 180;
@@ -415,63 +465,6 @@ function roughBirdDistance(pt1, pt2) {
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-function populateComparisonDropdowns() {
-    const s1 = document.getElementById("compare-1");
-    const s2 = document.getElementById("compare-2");
-    if (!s1 || !s2) return;
-
-    // Reset dropdown configurations
-    s1.innerHTML = '<option value="">Select Hospital A</option>';
-    s2.innerHTML = '<option value="">Select Hospital B</option>';
-
-    hospitalData.forEach((h, idx) => {
-        s1.add(new Option(h["Hospital Name"], idx));
-        s2.add(new Option(h["Hospital Name"], idx));
-    });
-    s1.addEventListener("change", runComparison);
-    s2.addEventListener("change", runComparison);
-}
-
-function runComparison() {
-    const idx1 = document.getElementById("compare-1").value;
-    const idx2 = document.getElementById("compare-2").value;
-    const resultBox = document.getElementById("comparison-result");
-
-    if (!idx1 || !idx2) { resultBox.classList.add("d-none"); return; }
-    resultBox.classList.remove("d-none");
-    const h1 = hospitalData[idx1];
-    const h2 = hospitalData[idx2];
-
-    document.getElementById("comp-header-1").innerText = h1["Hospital Name"];
-    document.getElementById("comp-header-2").innerText = h2["Hospital Name"];
-
-    const metrics = [
-        ["Sector", "Sector", ""],
-        ["Beds Total", "Beds", ""],
-        ["Negative Review Ratio", "Negative Reviews Ratio (%)", "%"],
-        ['Teaching Hospital ', 'Teaching Hospital ', ""],
-        ['PHC Zone', 'PHC Zone', ""],
-        ['Approx. Price', 'Marham Price', ""],
-        ['OPD', "OPD", ''],
-        ['Emergency', 'Emergency', ""],
-        ['Blood Bank', 'Blood Bank', ""],
-        ['Sehat Card Available', 'Sehat-Card Empaneled', ''],
-    ];
-
-    const container = document.getElementById("comparison-rows");
-    container.innerHTML = "";
-    metrics.forEach(m => {
-        container.innerHTML += `<tr><td class="fw-bold">${m[0]}</td><td>${h1[m[1]] || 'N/A'}${m[2]}</td><td>${h2[m[1]] || 'N/A'}${m[2]}</td></tr>`;
-    });
-
-    container.innerHTML += `
-        <tr>
-            <td class="fw-bold">Sehat Card Services</td>
-            <td>${h1["Sehat-Card Empaneled"] === "Yes" ? (h1["SCE For What"] || "Not specified") : "-"}</td>
-            <td>${h2["Sehat-Card Empaneled"] === "Yes" ? (h2["SCE For What"] || "Not specified") : "-"}</td>
-        </tr>
-    `;
-}
 </script>
 
 </body>

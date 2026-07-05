@@ -33,13 +33,16 @@
         }
         .table-brutal {
             border: 2px solid #000;
-            table-layout:fixed;
             width:100%;
         }
         .table-brutal th, .table-brutal td {
             border: 1px solid #000;
             padding: 12px;
             vertical-align: middle;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+
         }
         /* Custom header override to force pitch black background */
         .table-brutal thead.table-dark th { 

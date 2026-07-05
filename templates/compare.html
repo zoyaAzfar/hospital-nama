@@ -33,6 +33,8 @@
         }
         .table-brutal {
             border: 2px solid #000;
+            table-layout:fixed;
+            width:100%;
         }
         .table-brutal th, .table-brutal td {
             border: 1px solid #000;
@@ -129,9 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const columnCount = compareList.length + 1;
 
     // Build Table Headers
+    const hospitalCount = compareList.length;
+    // Allocate 25% to the metric column, divide the remaining 75% equally among hospitals
+    const equalWidth = (75 / hospitalCount).toFixed(2); 
+    
     let headerHtml = `<tr><th style="width: 25%;">Metric</th>`;
     compareList.forEach(h => {
-        headerHtml += `<th>${h["Hospital Name"] || 'Unnamed Hospital'}</th>`;
+        headerHtml += `<th style="width: ${equalWidth}%;">${h["Hospital Name"] || 'Unnamed Hospital'}</th>`;
     });
     headerHtml += `</tr>`;
     tHead.innerHTML = headerHtml;

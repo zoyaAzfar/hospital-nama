@@ -142,9 +142,30 @@ document.addEventListener("DOMContentLoaded", () => {
     headerHtml += `</tr>`;
     tHead.innerHTML = headerHtml;
 
+    // Calculate Average Negative Reviews Ratio dynamically among the selected items
+    let validRatios = [];
+    compareList.forEach(h => {
+        let val = parseFloat(h["Negative Reviews Ratio (%)"]);
+        if (!isNaN(val)) {
+            validRatios.push(val);
+        }
+    });
+    
+    const avgRatio = validRatios.length > 0 ? (validRatios.reduce((a, b) => a + b, 0) / validRatios.length) : null;
+
     // Categorized Configuration Array
-    // Structure: sectionId, sectionTitle, isCollapsedByDefault, metricsArray[ [Label, DataKey, Suffix] ]
     const sections = [
+        {
+            id: "review-stats",
+            title: "Review Statistics",
+            collapsed: false,
+            metrics: [
+                ["Negative Review vs Average", "CUSTOM_COMPARE", ""], 
+                ["Negative Reviews Ratio", "Negative Reviews Ratio (%)", "%"],
+                ["Negative Reviews Count (1-3 Stars)", "Negative Reviews Count (1-3 Stars)", ""],
+                ["Total Reviews (All Stars)", "Total Reviews (All Stars)", ""]
+            ]
+        },
         {
             id: "general-stats",
             title: "General Statistics",
@@ -167,17 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
             metrics: [
                 ["PHC Zone", "PHC Zone", ""],
                 ["Sehat-Card Empaneled", "Sehat-Card Empaneled", ""],
-                ["SCE For What", "SCE For What", "", true] // Special flag for Sehat Card conditional logic
-            ]
-        },
-        {
-            id: "review-stats",
-            title: "Review Statistics",
-            collapsed: false,
-            metrics: [
-                ["Total Reviews (All Stars)", "Total Reviews (All Stars)", ""],
-                ["Negative Reviews Count (1-3 Stars)", "Negative Reviews Count (1-3 Stars)", ""],
-                ["Negative Reviews Ratio", "Negative Reviews Ratio (%)", "%"]
+                ["SCE For What", "SCE For What", "", true]
             ]
         },
         {
@@ -196,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             id: "sub-themes",
             title: "Main Department Related Negative Patient Reviews",
-            collapsed: true, // Closed by default as requested!
+            collapsed: true,
             metrics: [
                 ["Nephrology", "Sub-Theme: nephrology (%)", "%"],
                 ["Pharmacy", "Sub-Theme: pharmacy (%)", "%"],
@@ -221,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Render sections and rows dynamically
     sections.forEach(section => {
-        // Create the drop-down header row
         const headerRow = document.createElement('tr');
         headerRow.className = `category-header ${section.collapsed ? 'collapsed' : ''}`;
         headerRow.dataset.target = section.id;
@@ -232,24 +242,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;        
         tBody.appendChild(headerRow);
 
-        // Render data rows within this category group
         section.metrics.forEach(m => {
             const row = document.createElement('tr');
             row.className = `${section.id}-row`;
             if (section.collapsed) {
-                row.style.display = 'none'; // Hide if section is closed by default
+                row.style.display = 'none';
             }
 
-            let rowHtml = `<td class="fw-bold style="padding-left: 25px;">${m[0]}</td>`;
+            let rowHtml = `<td class="fw-bold" style="padding-left: 25px;">${m[0]}</td>`;
             
             compareList.forEach(h => {
                 let value = h[m[1]];
                 
-                // Conditional handling for "SCE For What" row based on "Sehat-Card Empaneled" status
-                if (m[3] === true) { 
+                // Colorized logic matching your requested palette
+                if (m[1] === "CUSTOM_COMPARE") {
+                    let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
+                    if (avgRatio === null || isNaN(currentRatio)) {
+                        value = 'N/A';
+                    } else if (currentRatio > avgRatio) {
+                        // High negative ratio = Worse performance (Red theme)
+                        value = '<span class="fw-bold" style="color: #bf3100;">Above Average</span>';
+                    } else if (currentRatio < avgRatio) {
+                        // Low negative ratio = Better performance (Green theme)
+                        value = '<span class="fw-bold" style="color: #8ea604;">Below Average</span>';
+                    } else {
+                        // On par with average (Yellow theme)
+                        value = '<span class="fw-bold" style="color: #ec9f05;">Average</span>';
+                    }
+                } 
+                else if (m[3] === true) { 
                     const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
                     value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";
-                } else {
+                } 
+                else {
                     value = (value !== undefined && value !== null && value !== '') ? `${value}${m[2]}` : 'N/A';
                 }
                 
@@ -261,7 +286,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Delegate click events to headers for collapse/expand functionality
     tBody.addEventListener('click', (e) => {
         const header = e.target.closest('.category-header');
         if (!header) return;

@@ -114,7 +114,7 @@ h1,h5,h6{font-weight:700}
                 </div>
                 
                 <p class="text-muted small mb-0 style-italic"> 
-                    Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital"> website</a>
+                    Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital">website</a>
                     for the updated list of empaneled hospitals or contact the hospital directly to confirm the availability of service. 
                 </p>
             </div>
@@ -293,17 +293,16 @@ function processTargetPayload(hosp) {
     document.getElementById('stat-sehat-empaneled').innerText = hosp["Sehat-Card Empaneled"] || "No";
     const empaneled = String(hosp["Sehat-Card Empaneled"] || "").trim();
     const sehatCoverage = String(hosp["SCE For What"] || "").trim();
-    
-    const sehatDetails = document.getElementById("sehat-details");
+        
+    const statSehatFor = document.getElementById("stat-sehat-for");
     
     if (empaneled.toLowerCase() === "yes" && sehatCoverage) {
-        document.getElementById("stat-sehat-for").innerText =
-            `Coverage: ${sehatCoverage}`;
-        sehatDetails.style.display = "block";
+        statSehatFor.innerText = `Coverage: ${sehatCoverage}`;
+        statSehatFor.style.display = "block"; // Show the coverage detail line
     } else {
-        sehatDetails.style.display = "none";
+        statSehatFor.innerText = "";
+        statSehatFor.style.display = "none";  // Hide only the coverage line if "No" or empty
     }
-
     const phcZoneValue = (hosp["PHC Zone"] || "").toLowerCase().trim();
     const phcBadge = document.getElementById('stat-phc-zone');
     const phcDesc = document.getElementById('stat-phc-desc');

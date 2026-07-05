@@ -99,26 +99,18 @@ h1,h5,h6{font-weight:700}
         <div class="p-4 border border-2  border-dark rounded bg-white h-100">
             <h4 class="fw-bold mb-3 text-dark">Regulatory Statistics</h4>
             
-            <div class="mb-4 pb-3 border-bottom">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fw-bold text-dark me-2">PHC Zone Status:</span>
-                    <span id="stat-phc-zone"class="px-3 py-2 fw-bold">
-                </div>
-                <p id="stat-phc-desc" class="text-muted small mb-0 style-italic">Loading zone information...</p>
-            </div>
-
-            <div class = "mb-4 pb-3">
+           <div class="mb-4 pb-3" id="sehat-details">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                      <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span></span>
                 </div>
-                    <div>
-                        <small id="stat-sehat-for" class="text-muted">-</small>
-                    </div>
-                    
-                <p class="text-muted small mb-0 style-italic"> Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital"> website</a>
+                <div>
+                    <small id="stat-sehat-for" class="text-muted">-</small>
+                </div>
+                
+                <p class="text-muted small mb-0 style-italic"> 
+                    Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital"> website</a>
                     for the updated list of empaneled hospitals or contact the hospital directly to confirm the availability of service. 
                 </p>
-
             </div>
             
         </div>
@@ -355,6 +347,17 @@ function processTargetPayload(hosp) {
     ];
 
     buildMajorThemesChart(majorLabels, majorValues, majorDocs);
+
+    // ADD THIS: Extract Sub-Themes based on your SQL structure
+    const subLabels = ["Nephrology", "Pharmacy", "Gynaecology", "Tests", "Gastro", "Cardiology", "Orthopedics", "Emergency", "Diagnosis", "Urology", "Dentistry", "Blood", "Cancer", "Vaccines", "Radiology", "ICU", "Derma"];
+    const subValues = [
+        hosp["Sub-Theme: nephrology (%)"], hosp["Sub-Theme: pharmacy (%)"], hosp["Sub-Theme: gynaecology (%)"], hosp["Sub-Theme: tests (%)"], hosp["Sub-Theme: gastro (%)"], hosp["Sub-Theme: cardiology (%)"], hosp["Sub-Theme: orthopedics (%)"], hosp["Sub-Theme: emergancy (%)"], hosp["Sub-Theme: diagnosis (%)"], hosp["Sub-Theme: urology (%)"], hosp["Sub-Theme: dentistry (%)"], hosp["Sub-Theme: blood (%)"], hosp["Sub-Theme: cancer (%)"], hosp["Sub-Theme: vaccines (%)"], hosp["Sub-Theme: radiology (%)"], hosp["Sub-Theme: icu (%)"], hosp["Sub-Theme: derma (%)"]
+    ];
+    const subDocs = [
+        hosp["Representative Docs (Sub): nephrology"], hosp["Representative Docs (Sub): pharmacy"], hosp["Representative Docs (Sub): gynaecology"], hosp["Representative Docs (Sub): tests"], hosp["Representative Docs (Sub): gastro"], hosp["Representative Docs (Sub): cardiology"], hosp["Representative Docs (Sub): orthopedics"], hosp["Representative Docs (Sub): emergancy"], hosp["Representative Docs (Sub): diagnosis"], hosp["Representative Docs (Sub): urology"], hosp["Representative Docs (Sub): dentistry"], hosp["Representative Docs (Sub): blood"], hosp["Representative Docs (Sub): cancer"], hosp["Representative Docs (Sub): vaccines"], hosp["Representative Docs (Sub): radiology"], hosp["Representative Docs (Sub): icu"], hosp["Representative Docs (Sub): derma"]
+    ];
+
+    buildSubThemesChart(subLabels, subValues, subDocs);
 }
 
 function buildMajorThemesChart(labels, dataValues, documentationTexts) {

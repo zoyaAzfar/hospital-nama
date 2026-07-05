@@ -95,11 +95,17 @@ h1,h5,h6{font-weight:700}
         </div>
     </div>
 
-    <div class="col-md-6 col-12">
+<div class="col-md-6 col-12">
         <div class="p-4 border border-2  border-dark rounded bg-white h-100">
             <h4 class="fw-bold mb-3 text-dark">Regulatory Statistics</h4>
             
-           <div class="mb-4 pb-3" id="sehat-details">
+            <div class="mb-4 pb-3 border-bottom border-dark">
+                <span class="fw-bold text-dark d-block mb-2">PHC Zone Status:</span>
+                <span id="stat-phc-zone" class="p-2 fw-bold">-</span>
+                <p id="stat-phc-desc" class="text-muted small mt-2 d-none"></p>
+            </div>
+            
+           <div class="mb-4 pb-3 mt-3" id="sehat-details">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                      <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span></span>
                 </div>

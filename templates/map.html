@@ -156,8 +156,9 @@ let distanceMatrixService;
 let hospitalData = [];
 let mapMarkers = [];
 let mapInitialized = false;
-let selectedForCompare = JSON.parse(localStorage.getItem('compareList')) || [];
-
+localStorage.removeItem('compareList');
+let selectedForCompare = [];
+    
 // Default to central Lahore if no parameters are provided
 let userLocation = { lat: 31.5204, lng: 74.3587 }; 
 const lahoreBounds = { north: 31.65, south: 31.25, west: 74.05, east: 74.55 };

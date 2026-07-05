@@ -340,40 +340,49 @@ function filterAndRenderData() {
             const element = results[index];
             if (element.status === "OK") {
                 hosp.roadDistanceText = element.distance.text;
-                hosp.roadDistanceValueKm = element.distance.value / 1000;
-                hosp.durationText = element.duration_in_traffic ? element.duration_in_traffic.text : element.duration.text;
-                hosp.durationSeconds = element.duration_in_traffic ? element.duration_in_traffic.value : element.duration.value;
-                finalRenderList.push(hosp);
+                hosp.roadDistanceValueKm = roadDistKm;
+            hosp.durationText = element.duration_in_traffic ? element.duration_in_traffic.text : element.duration.text;
+            hosp.durationSeconds = element.duration_in_traffic ? element.duration_in_traffic.value : element.duration.value;
+            finalRenderList.push(hosp);
 
-                // Dynamically color pins based on travel duration
-                let pinColor = "#2a9d8f"; 
-                const minutes = hosp.durationSeconds / 60;
-                if (minutes > 7 && minutes <= 15) pinColor = "#e9c46a"; 
-                if (minutes > 15) pinColor = "#e63946"; 
+            // Dynamically color pins based on travel duration
+            let pinColor = "#2a9d8f"; 
+            const minutes = hosp.durationSeconds / 60;
+            if (minutes > 7 && minutes <= 15) pinColor = "#e9c46a"; 
+            if (minutes > 15) pinColor = "#e63946"; 
 
-                const hospitalPin = new google.maps.marker.PinElement({
-                    background: pinColor, borderColor: "#ffffff", glyphColor: "#ffffff"
-                });
+            const hospitalPin = new google.maps.marker.PinElement({
+                background: pinColor, borderColor: "#ffffff", glyphColor: "#ffffff"
+            });
 
-                const marker = new google.maps.marker.AdvancedMarkerElement({
-                    map: map, position: { lat: parseFloat(hosp.latitude), lng: parseFloat(hosp.longitude) },
-                    content: hospitalPin.element, title: hosp["Hospital Name"]
-                });
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+                map: map, position: { lat: parseFloat(hosp.latitude), lng: parseFloat(hosp.longitude) },
+                content: hospitalPin.element, title: hosp["Hospital Name"]
+            });
 
-                marker.addListener('click', () => {
-                    infoWindow.setContent(`
-                        <div style="color: black; padding: 5px; font-family: 'Noto Sans';">
-                            <h6 style="margin:0 0 5px 0; font-weight:bold;">${hosp["Hospital Name"]}</h6>
-                            <p style="margin:0 0 8px 0; font-size:0.85rem;">
-                                Road Distance: <b>${hosp.roadDistanceText}</b><br>
-                                Live Drive: <b>${hosp.durationText}</b>
-                            </p>
-                            <a href="/hospital/${hosp.id}" class="btn brutal-btn btn-sm w-100" style="font-size: 0.8rem;">View Details</a>
+            marker.addListener('click', () => {
+                // Check the selection state right when clicked
+                const isSelected = selectedForCompare.some(sh => sh.id == hosp.id);
+                const btnText = isSelected ? "Selected" : "Select to compare";
+                const btnStyles = isSelected ? "background-color: #000; color: #fff;" : "";
+
+                infoWindow.setContent(`
+                    <div style="color: black; padding: 5px; font-family: 'Noto Sans';">
+                        <h6 style="margin:0 0 5px 0; font-weight:bold;">${hosp["Hospital Name"]}</h6>
+                        <p style="margin:0 0 8px 0; font-size:0.85rem;">
+                            Road Distance: <b>${hosp.roadDistanceText}</b><br>
+                            Live Drive: <b>${hosp.durationText}</b>
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="/hospital/${hosp.id}" class="btn brutal-btn btn-sm w-50" style="font-size: 0.8rem;">View</a>
+                            <button onclick="toggleCompare('${hosp.id}')" class="btn brutal-btn btn-sm w-50" style="font-size: 0.8rem; ${btnStyles}">${btnText}</button>
                         </div>
-                    `);
-                    infoWindow.open(map, marker);
-                });
-                mapMarkers.push(marker);
+                    </div>
+                `);
+                infoWindow.open(map, marker);
+            });
+
+            mapMarkers.push(marker);
             }
         });
         finalRenderList.sort((a, b) => a.roadDistanceValueKm - b.roadDistanceValueKm);

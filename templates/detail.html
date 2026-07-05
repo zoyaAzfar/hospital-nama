@@ -311,6 +311,42 @@ function processTargetPayload(hosp) {
 
     phcBadge.innerText = hosp["PHC Zone"] || "Not Tracked";
 
+    // Custom Switch Statement to change description block and color theme dynamically
+    switch(phcZoneValue) {
+        case 'green':
+            phcBadge.style.backgroundColor = "#d1e7dd";
+            phcBadge.style.color = "#0f5132";
+            phcDesc.innerText = "Green status indicates good complaince of MSDS. The hospital meets the basic benchmark of quality.";
+            break;
+        case 'blue':
+            phcBadge.style.backgroundColor = "#cfe2ff";
+            phcBadge.style.color = "#084298";
+            phcDesc.innerText = "Blue status indicates an MSDS compliance score of 70% and above, but it does not have a license yet. These hospitals can enter the Green zone with some effort.";
+            break;
+        case 'renewal':
+            phcBadge.style.backgroundColor = "#fff3cd";
+            phcBadge.style.color = "#664d03";
+            phcDesc.innerText = "Renewal status indicates that the hospital was Green (good complaince with MSDS) but needs to get its license renewed.";
+            break;
+        case 'grey':
+            phcBadge.style.backgroundColor = "#f8f9fa";
+            phcBadge.style.color = "#212529";
+            phcDesc.innerText = "Grey status indicates an uninspected healthcare facility. The MSDS compliance status of this hospital is unknown.";
+            break;
+        case 'red':
+            phcBadge.style.backgroundColor = "#f8d7da";
+            phcBadge.style.color = "#842029";
+            phcDesc.innerText = "Red status indicates a MSDS compliance score of 49% and below. This hospital has poor quality of care and compromised patient safety.";
+            break;
+        default:
+            phcBadge.style.backgroundColor = "#e2e3e5";
+            phcBadge.style.color = "#41464b";
+            phcDesc.innerText = "No localized diagnostic records could categorize this hospital's precise operational zone metric at this time.";
+            break;
+    }
+
+    phcBadge.innerText = hosp["PHC Zone"] || "Not Tracked";
+
     switch(phcZoneValue){
     
     case "green":

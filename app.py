@@ -31,6 +31,10 @@ def about():
 def metrics():
     return render_template('hospitals.html')
 
+@app.route('/compare')
+def compare():
+    return render_template('compare.html')
+
 @app.route('/hospital/<int:hosp_id>')
 def hospital_detail(hosp_id):
     # Pass the ID directly to a dedicated template view

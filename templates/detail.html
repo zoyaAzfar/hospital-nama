@@ -21,15 +21,28 @@ body, html {
 .brutal-btn{background:#fff;color:#000;border:2px solid #000;border-radius:0;font-weight:bold;transition:all .1s ease-in-out;}
 .brutal-btn:hover{background:#000;color:#fff;transform:translate(3px,3px)}
 .card,.review-box,#major-theme-details,#sub-theme-details{border:2px solid #000!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}
-.chart-container{position:relative;margin:auto;height:420px;width:420px}
-.btn,.rounded,.shadow-sm{border-radius:0!important;box-shadow:none!important}
+.chart-container{
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+}
+
+.chart-container canvas{
+    width:100% !important;
+    height:100% !important;
+}
+    .btn,.rounded,.shadow-sm{border-radius:0!important;box-shadow:none!important}
 .border-end{border-right:2px solid #000!important}
 h1,h5,h6{font-weight:700}
 
-@media(min-width:768px){
+@media (max-width:768px){
+
     .chart-container{
-        height:300px;
+        max-width:280px;
     }
+
 }
     
 </style>

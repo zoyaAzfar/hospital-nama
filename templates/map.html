@@ -248,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Set up UI components now that data is loaded
             initGoogleMap();
             filterAndRenderData();
+            updateCompareUI(); //bruhhh im actually loosing my mind
         }).catch(err => {
             console.error("Error loading /api/hospitals:", err);
             initGoogleMap(); // Fallback map render even if API fails

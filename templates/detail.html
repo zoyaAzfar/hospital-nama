@@ -420,24 +420,63 @@ function buildMajorThemesChart(labels, dataValues, documentationTexts) {
     }
     
     function updateMajorPanel(idx){
-        const box = document.getElementById("major-review");
-        const details = document.getElementById("major-details-content");
-        const name = activeLabels[idx];
-        let benchmark = "";
-
-        if(sectorBenchmarks[currentHospitalSector] && sectorBenchmarks[currentHospitalSector][name]){
-            benchmark = ` | Sector Average: ${sectorBenchmarks[currentHospitalSector][name]}%`;
-        }
-
-        details.innerHTML = themeDescriptions[name];
-
-        if(name==="Department Related"){
-            box.innerHTML = `<strong>Department Related (${activeValues[idx]}%${benchmark})</strong><br>
-            This category contains complaints related to specific hospital departments. Click this slice to drill down.`;
-        } else {
-            box.innerHTML = `<strong>${name} (${activeValues[idx]}%${benchmark})</strong><br>"${activeDocs[idx] || "No documentation."}"`;
-        }
-    }    
+            const box = document.getElementById("major-review");
+            const details = document.getElementById("major-details-content");
+        
+            const name = activeLabels[idx];
+            const currentRatio = Number(activeValues[idx]);
+        
+            let benchmarkText = "";
+            let performanceText = "";
+        
+            if (
+                sectorBenchmarks[currentHospitalSector] &&
+                sectorBenchmarks[currentHospitalSector][name]
+            ) {
+                const avgRatio = Number(sectorBenchmarks[currentHospitalSector][name]);
+        
+                // 5 percentage point margin
+                const buffer = 5;
+        
+                benchmarkText = ` | Sector Average: ${avgRatio.toFixed(1)}%`;
+        
+                if (currentRatio > (avgRatio + buffer)) {
+                    performanceText =
+                        '<br><span class="fw-bold" style="color:#bf3100;">Below Average Performance</span>';
+                }
+                else if (currentRatio < (avgRatio - buffer)) {
+                    performanceText =
+                        '<br><span class="fw-bold" style="color:#8ea604;">Above Average Performance</span>';
+                }
+                else {
+                    performanceText =
+                        '<br><span class="fw-bold" style="color:#ec9f05;">Average Performance</span>';
+                }
+            }
+        
+            details.innerHTML = themeDescriptions[name];
+        
+            if (name === "Department Related") {
+        
+                box.innerHTML = `
+                    <strong>${name} (${currentRatio}%${benchmarkText})</strong>
+                    ${performanceText}
+                    <br>
+                    This category contains complaints related to specific hospital departments.
+                    Click this slice to drill down.
+                `;
+        
+            } else {
+        
+                box.innerHTML = `
+                    <strong>${name} (${currentRatio}%${benchmarkText})</strong>
+                    ${performanceText}
+                    <br>
+                    "${activeDocs[idx] || "No documentation."}"
+                `;
+        
+            }
+        }  
 
     const ctx = document.getElementById('majorChart').getContext('2d');
     majorChartInstance = new Chart(ctx, {

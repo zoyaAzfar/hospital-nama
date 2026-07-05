@@ -449,8 +449,8 @@ function renderUIList(list) {
         const btnClass = isSelected ? "bg-dark text-white" : "bg-white text-dark";
 
         container.innerHTML += `
-            <div class="list-group-item d-flex flex-column bg-white border border-dark mb-2 p-3" style="border-radius:10px;">
-                <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="list-group-item d-flex flex-column bg-light mb-2 p-3" style="border: none; border-radius: 10px;">
+        <div class="d-flex justify-content-between align-items-center w-100">
                     <div>
                         <h6 class="mb-0 fw-bold small"><a href="/hospital/${h.id}" class="text-decoration-none text-dark">${h["Hospital Name"]}</a></h6>
                         <small class="text-muted" style="font-size:0.75rem;">${h["Sector"]} | <span class="fw-bold text-dark">${h.durationText}</span></small>

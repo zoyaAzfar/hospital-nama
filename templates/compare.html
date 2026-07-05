@@ -259,17 +259,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
                     if (avgRatio === null || isNaN(currentRatio)) {
                         value = 'N/A';
-                    } else if (currentRatio > avgRatio) {
-                        // High negative ratio = Worse performance (Red theme)
-                        value = '<span class="fw-bold" style="color: #bf3100;">Above Average</span>';
-                    } else if (currentRatio < avgRatio) {
-                        // Low negative ratio = Better performance (Green theme)
-                        value = '<span class="fw-bold" style="color: #8ea604;">Below Average</span>';
                     } else {
-                        // On par with average (Yellow theme)
-                        value = '<span class="fw-bold" style="color: #ec9f05;">Average</span>';
+                        // Define a 5 percentage point buffer zone
+                        const buffer = 5; 
+                        
+                        if (currentRatio > (avgRatio + buffer)) {
+                            // Significantly higher than average (Worse performance)
+                            value = '<span class="fw-bold" style="color: #bf3100;">Above Average</span>';
+                        } else if (currentRatio < (avgRatio - buffer)) {
+                            // Significantly lower than average (Better performance)
+                            value = '<span class="fw-bold" style="color: #8ea604;">Below Average</span>';
+                        } else {
+                            // Within the +/- 5% margin of error
+                            value = '<span class="fw-bold" style="color: #ec9f05;">Average</span>';
+                        }
                     }
-                } 
+                }
                 else if (m[3] === true) { 
                     const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
                     value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";

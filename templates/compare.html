@@ -74,6 +74,13 @@
         .collapsed .toggle-icon {
             transform: rotate(-90deg);
         }
+
+        .metric-cell {
+            white-space: normal;
+            word-break: normal;
+            overflow-wrap: break-word; /* or remove this line entirely */
+        }
+                
     </style>
 </head>
 <body class="d-flex flex-column h-100">
@@ -253,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.style.display = 'none';
             }
 
-            let rowHtml = `<td class="fw-bold" style="padding-left: 25px;">${m[0]}</td>`;
+            let rowHtml = `<td class="fw-bold metric-cell" style="padding-left: 25px;">${m[0]}</td>`;
             
             compareList.forEach(h => {
                 let value = h[m[1]];

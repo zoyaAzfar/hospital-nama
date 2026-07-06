@@ -78,6 +78,19 @@
     word-break: normal;
     overflow-wrap: normal;
 }
+
+                /* Hide the table headers and body completely if they have no inner HTML */
+        #compare-thead:empty,
+        #compare-tbody:empty {
+            display: none;
+        }
+        
+        /* Optional: If the table element itself has a wrapper border, hide the whole table when empty */
+        table:has(#compare-tbody:empty) {
+            border: none;
+            outline: none;
+        }
+                
 /**
         .table-brutal {
     min-width: 900px;

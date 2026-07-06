@@ -1,5 +1,5 @@
-from flask import Flask, render_template, jsonify, abort
-import sqlite3, os
+from flask import Flask, render_template, jsonify, abort, send_from_directory
+import sqlite3, os, 
 
 app = Flask(__name__)
 DB_FILE = "hospitals.db"
@@ -39,6 +39,16 @@ def compare():
 def hospital_detail(hosp_id):
     # Pass the ID directly to a dedicated template view
     return render_template('detail.html', hosp_id=hosp_id)
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory("static", "sitemap.xml")
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory("static", "robots.txt")
+
 
 @app.route('/api/hospitals')
 def get_hospitals():

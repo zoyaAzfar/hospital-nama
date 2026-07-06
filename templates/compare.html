@@ -1,369 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compare Hospitals | Hospital Nama</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <style>
-        body, html { 
-            height: 100%; 
-            margin: 0; 
-            background-color: #ffffff; 
-            font-family: "Noto Sans";
-            color: #000;
-        }
-        .brutal-border {
-            border: 2px solid #000;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-        .brutal-btn {
-            background-color: #fff;
-            color: #000;
-            border: 2px solid #000;
-            border-radius: 0px;
-            font-weight: bold;
-            transition: all 0.1s ease-in-out;
-        }
-        .brutal-btn:hover {
-            opacity: 0.9;
-            transform: translate(3px, 3px);
-        }
-        .table-brutal {
-            border: 2px solid #000;
-            width:100%;
-        }
-        .table-brutal th,
-        .table-brutal td {
-            white-space: normal;
-            word-break: normal;
-            overflow-wrap: normal;
-            hyphens: auto;
-        }
-        .table-brutal thead.table-dark th { 
-            background-color: #000 !important; 
-            color: #fff !important;
-            border-bottom: 2px solid #000;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Hospitals | Hospital Nama</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            background-color: #ffffff; 
+            font-family: "Noto Sans";
+            color: #000;
+        }
+        .brutal-border {
+            border: 2px solid #000;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .brutal-btn {
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            border-radius: 0px;
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+        }
+        .brutal-btn:hover {
+            opacity: 0.9;
+            transform: translate(3px, 3px);
+        }
+        .table-brutal {
+            border: 2px solid #000;
+            width:100%;
+        }
+        .table-brutal th,
+        .table-brutal td {
+            white-space: normal;
+            word-break: normal;
+            overflow-wrap: normal;
+            hyphens: auto;
+        }
+        /* Custom header override to force pitch black background */
+        .table-brutal thead.table-dark th { 
+            background-color: #000 !important; 
+            color: #fff !important;
+            border-bottom: 2px solid #000;
+        }
 
-        .category-header {
-            background-color: #000000 !important; 
-            color: #000 !important;              
-            cursor: pointer;
-            user-select: none;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-top: 2px solid #000 !important;   
-            border-bottom: 2px solid #000 !important;
-        }
-        .category-header:hover {
-            background-color: #dee2e6 !important; 
-        }
+        .category-header {
+            background-color: #000000 !important; /* Premium light gray background */
+            color: #000 !important;               /* Sharp black text */
+            cursor: pointer;
+            user-select: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 2px solid #000 !important;   /* Thicker top border for brutalist style */
+            border-bottom: 2px solid #000 !important;/* Thicker bottom border */
+        }
+        .category-header:hover {
+            background-color: #dee2e6 !important; /* Slightly darker gray when hovering */
+        }
 
-        .toggle-icon {
-            display: inline-block;
-            transition: transform 0.2s;
-            margin-right: 8px;
-        }
-        .collapsed .toggle-icon {
-            transform: rotate(-90deg);
-        }
+        .toggle-icon {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 8px;
+        }
+        .collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
 
-        .metric-cell {
-            white-space: normal;
-            word-break: normal;
-            overflow-wrap: normal;
-        }
-    </style>
+       .metric-cell {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+/**
+        .table-brutal {
+    min-width: 900px;
+}
+
+        put this out idk im like idk i just ughghghghghg
+        **/ 
+                
+    </style>
 </head>
 <body class="d-flex flex-column h-100">
 
-<nav class="navbar navbar-expand-lg px-4 py-3 " style="background-color:#003049;" >
-    <a href="/" style="text-decoration:none"><span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" >Hospital Nama | ہسپتال نامہ</span></a>
-    <div class="ms-auto">
-        <ul class="navbar-nav flex-row gap-4 ">
-            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/">Home</a></li>
-            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/map">Find Hospitals</a></li>
-            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/compare">Compare</a></li>
-            <li class="nav-item"><a class="nav-link" style="color:white !important;" href="/about">About Us</a></li>
-        </ul>
-    </div>
+<nav class="navbar navbar-expand-lg px-4 py-3 " style = "background-color:#003049;" >
+    <a href="/" style="text-decoration:none"><span class="navbar-brand mb-0 fw-bold fs-8 text-white" style="cursor:pointer;" >Hospital Nama | ہسپتال نامہ</span></a>
+    <div class="ms-auto">
+        <ul class="navbar-nav flex-row gap-4 ">
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/">Home</a></li>
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/map">Find Hospitals</a></li>
+            <li class="nav-item "><a class="nav-link" style="color:white !important;" href="/compare">Compare</a></li>
+            <li class="nav-item"><a class="nav-link" style="color:white !important;" href="/about">About Us</a></li>
+        </ul>
+    </div>
 </nav>
 
+
+
 <div class="container mt-5 flex-grow-1">
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4 mb-4">
-        <div class="d-flex align-items-center gap-4">
-            <a href="{{ url_for('map_view') }}" class="btn brutal-btn" style="background-color:#780000; color:white !important;">← Back to Main Map</a>
-            <h2 class="fw-bold mb-0">Hospital Comparison</h2>
-        </div>
-        
-        <div class="d-flex align-items-center gap-2">
-            <label for="hospital-select" class="fw-bold small text-nowrap">Add Hospital:</label>
-            <select id="hospital-select" class="form-select brutal-border py-1" style="max-width: 280px;">
-                <option value="" selected disabled>Choose a hospital...</option>
-                {% for hospital in all_hospitals %}
-                <option value="{{ hospital['Hospital Name'] }}">{{ hospital['Hospital Name'] }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
+    <div class="d-flex align-items-center gap-4 mb-4">
+        <a href="{{ url_for('map_view') }}" class="btn brutal-btn" style="background-color:#780000; color:white !important;">← Back to Main Map</a>
+        <h2 class="fw-bold mb-0">Hospital Comparison</h2>
+    </div>
 
-    <script id="all-hospitals-data" type="application/json">
-        {{ all_hospitals | tojson }}
-    </script>
-
-    <div class="brutal-border p-0 overflow-auto mb-5">
-        <table class="table table-brutal mb-0" id="compare-table">
-            <thead id="compare-thead" class="table-dark text-white">
-            </thead>
-            <tbody id="compare-tbody">
-            </tbody>
-        </table>
-    </div>
+    <div class="brutal-border p-0 overflow-auto mb-5">
+        <table class="table table-brutal mb-0" id="compare-table">
+            <thead id="compare-thead" class="table-dark text-white">
+            </thead>
+            <tbody id="compare-tbody">
+            </tbody>
+        </table>
+    </div>
 </div>
 
+
 <footer class="py-4 mt-auto" id="home-footer" style="background-color:#003049; color:white;">
-    <div class="container text-md-start text-center">
-        <div class="row g-4">
-            <div class="col-md-6">
-                <span class="fw-bold small d-block mb-2">Hospital Nama | 2026</span>
-                <p class="small text-white-50 mb-0">Any data on this website is provided solely for informational purposes, not for medical advice.</p>
-            </div>
-            <div class="col-md-6 text-md-end text-center">
-                <span class="fw-bold small d-block mb-2">Quick Links</span>
-                <div class="mb-3">
-                    <a href="/" class="text-white text-decoration-none me-3 small">Home</a>
-                    <a href="/map" class="text-white text-decoration-none small">Find Hospitals</a>
-                    <a href="/compare" class="text-white text-decoration-none me-3 small">Compare</a>
-                    <a href="/about" class="text-white text-decoration-none me-3 small">About Us</a>
-                </div>
-                <p class="small mb-0">Email: hospitalnama@gmail.com</p>
-            </div>
-        </div>
-    </div>
+    <div class="container text-md-start text-center">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <span class="fw-bold small d-block mb-2">Hospital Nama | 2026</span>
+                <p class="small text-white-50 mb-0">Any data on this website is provided solely for informational purposes, not for medical advice.</p>
+            </div>
+            
+            <div class="col-md-6 text-md-end text-center">
+                <span class="fw-bold small d-block mb-2">Quick Links</span>
+                <div class="mb-3">
+                    <a href="/" class="text-white text-decoration-none me-3 small">Home</a>
+                    <a href="/map" class="text-white text-decoration-none small">Find Hospitals</a>
+                    <a href="/compare" class="text-white text-decoration-none me-3 small">Compare</a>
+                    <a href="/about" class="text-white text-decoration-none me-3 small">About Us</a>
+                </div>
+                <p class="small mb-0">Email: hospitalnama@gmail.com</p>
+            </div>
+        </div>
+    </div>
 </footer>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // Read list of all hospitals injected securely via template engine script block
-    let masterHospitals = [];
-    try {
-        masterHospitals = JSON.parse(document.getElementById('all-hospitals-data').textContent);
-    } catch(e) {
-        console.error("Could not parse master hospital list", e);
-    }
+    const compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+    
+    if (compareList.length < 2) {
+        document.getElementById('compare-table').innerHTML = `
+            <div class="p-5 text-center" style="border: 2px solid #000000; border-radius: 5px;">
+                <h4>Not enough hospitals selected.</h4>
+                <p>Please go back to the map and select at least 2 hospitals to compare.</p>
+                <a href="{{ url_for('map_view') }}" class="btn brutal-btn mt-3" style="background-color:#780000; color:white !important;">Go to Map</a>
+            </div>
+        `;
+        return;
+    }
 
-    const compareList = JSON.parse(localStorage.getItem('compareList')) || [];
-    
-    // Wire up dropdown action logic
-    const dropdown = document.getElementById('hospital-select');
-    dropdown.addEventListener('change', (e) => {
-        const selectedName = e.target.value;
-        if(!selectedName) return;
+    const tHead = document.getElementById('compare-thead');
+    const tBody = document.getElementById('compare-tbody');
+    const columnCount = compareList.length + 1;
 
-        // Ensure hospital isn't already inside current comparison
-        const exists = compareList.some(h => h["Hospital Name"] === selectedName);
-        if(exists) {
-            alert("This hospital is already inside your comparison view!");
-            dropdown.value = "";
-            return;
-        }
+    // Build Table Headers
+    const hospitalCount = compareList.length;
+    // Allocate 25% to the metric column, divide the remaining 75% equally among hospitals
+    const equalWidth = (75 / hospitalCount).toFixed(2); 
+    
+    let headerHtml = `<tr><th style="width: 25%;">Metric</th>`;
+    compareList.forEach(h => {
+        headerHtml += `<th style="width: ${equalWidth}%;">${h["Hospital Name"] || 'Unnamed Hospital'}</th>`;
+    });
+    headerHtml += `</tr>`;
+    tHead.innerHTML = headerHtml;
 
-        // Find matches inside master dataset structure
-        const hospitalObj = masterHospitals.find(h => h["Hospital Name"] === selectedName);
-        if(hospitalObj) {
-            compareList.push(hospitalObj);
-            localStorage.setItem('compareList', JSON.stringify(compareList));
-            window.location.reload(); // Reload immediately draws new matching columns
-        }
-    });
+    // Calculate Average Negative Reviews Ratio dynamically among the selected items
+    let validRatios = [];
+    compareList.forEach(h => {
+        let val = parseFloat(h["Negative Reviews Ratio (%)"]);
+        if (!isNaN(val)) {
+            validRatios.push(val);
+        }
+    });
+    
+    const avgRatio = validRatios.length > 0 ? (validRatios.reduce((a, b) => a + b, 0) / validRatios.length) : null;
 
-    if (compareList.length < 2) {
-        document.getElementById('compare-table').innerHTML = `
-            <div class="p-5 text-center" style="border: 2px solid #000000; border-radius: 5px;">
-                <h4>Not enough hospitals selected.</h4>
-                <p>Please go back to the map or select options above to compare at least 2 hospitals.</p>
-                <a href="{{ url_for('map_view') }}" class="btn brutal-btn mt-3" style="background-color:#780000; color:white !important;">Go to Map</a>
-            </div>
-        `;
-        return;
-    }
+    // Categorized Configuration Array
+    const sections = [
+        {
+            id: "review-stats",
+            title: "Review Statistics",
+            collapsed: false,
+            metrics: [
+                ["Negative Review vs Average", "CUSTOM_COMPARE", ""], 
+                ["Negative Reviews Ratio", "Negative Reviews Ratio (%)", "%"],
+                ["Negative Reviews Count (1-3 Stars)", "Negative Reviews Count (1-3 Stars)", ""],
+                ["Total Reviews (All Stars)", "Total Reviews (All Stars)", ""]
+            ]
+        },
+        {
+            id: "general-stats",
+            title: "General Statistics",
+            collapsed: false,
+            metrics: [
+                ["Sector", "Sector", ""],
+                ["Teaching Hospital", "Teaching Hospital ", ""],
+                ["Beds", "Beds", ""],
+                ["Marham Price", "Marham Price", ""],
+                ["Departments", "Department", ""],
+                ["OPD", "OPD", ""],
+                ["Emergency", "Emergency", ""],
+                ["Blood Bank", "Blood Bank", ""]
+            ]
+        },
+        {
+            id: "regulatory-stats",
+            title: "Regulatory Statistics",
+            collapsed: false,
+            metrics: [
+                ["PHC Zone", "PHC Zone", ""],
+                ["Sehat-Card Empaneled", "Sehat-Card Empaneled", ""],
+                ["SCE For What", "SCE For What", "", true]
+            ]
+        },
+        {
+            id: "major-themes",
+            title: "Main Areas in Negative Patient Reviews",
+            collapsed: false,
+            metrics: [
+                ["Environment", "Major Theme: enviornment (%)", "%"],
+                ["Behaviour", "Major Theme: behaviour (%)", "%"],
+                ["Money", "Major Theme: money (%)", "%"],
+                ["Time", "Major Theme: time (%)", "%"],
+                ["Management", "Major Theme: management (%)", "%"],
+                ["Process Specific", "Major Theme: process specific (%)", "%"]
+            ]
+        },
+        {
+            id: "sub-themes",
+            title: "Main Department Related Negative Patient Reviews",
+            collapsed: true,
+            metrics: [
+                ["Nephrology", "Sub-Theme: nephrology (%)", "%"],
+                ["Pharmacy", "Sub-Theme: pharmacy (%)", "%"],
+                ["Gynaecology", "Sub-Theme: gynaecology (%)", "%"],
+                ["Tests", "Sub-Theme: tests (%)", "%"],
+                ["Gastro", "Sub-Theme: gastro (%)", "%"],
+                ["Cardiology", "Sub-Theme: cardiology (%)", "%"],
+                ["Orthopedics", "Sub-Theme: orthopedics (%)", "%"],
+                ["Emergency", "Sub-Theme: emergancy (%)", "%"],
+                ["Diagnosis", "Sub-Theme: diagnosis (%)", "%"],
+                ["Urology", "Sub-Theme: urology (%)", "%"],
+                ["Dentistry", "Sub-Theme: dentistry (%)", "%"],
+                ["Blood", "Sub-Theme: blood (%)", "%"],
+                ["Cancer", "Sub-Theme: cancer (%)", "%"],
+                ["Vaccines", "Sub-Theme: vaccines (%)", "%"],
+                ["Radiology", "Sub-Theme: radiology (%)", "%"],
+                ["ICU", "Sub-Theme: icu (%)", "%"],
+                ["Derma", "Sub-Theme: derma (%)", "%"]
+            ]
+        }
+    ];
 
-    const tHead = document.getElementById('compare-thead');
-    const tBody = document.getElementById('compare-tbody');
-    const columnCount = compareList.length + 1;
+    // Render sections and rows dynamically
+    sections.forEach(section => {
+        const headerRow = document.createElement('tr');
+        headerRow.className = `category-header ${section.collapsed ? 'collapsed' : ''}`;
+        headerRow.dataset.target = section.id;
+        headerRow.innerHTML = `
+                    <td colspan="${columnCount}" style="background-color: #e9ecef !important; color: #000 !important; font-weight: 800;">
+                        <span class="toggle-icon">▼</span> ${section.title}
+                    </td>
+                `;        
+        tBody.appendChild(headerRow);
 
-    // Build Table Headers
-    const hospitalCount = compareList.length;
-    const equalWidth = (75 / hospitalCount).toFixed(2); 
-    
-    let headerHtml = `<tr><th style="width: 25%;">Metric</th>`;
-    compareList.forEach(h => {
-        headerHtml += `<th style="width: ${equalWidth}%;">${h["Hospital Name"] || 'Unnamed Hospital'}</th>`;
-    });
-    headerHtml += `</tr>`;
-    tHead.innerHTML = headerHtml;
+        section.metrics.forEach(m => {
+            const row = document.createElement('tr');
+            row.className = `${section.id}-row`;
+            if (section.collapsed) {
+                row.style.display = 'none';
+            }
 
-    // Calculate Average Negative Reviews Ratio dynamically among the selected items
-    let validRatios = [];
-    compareList.forEach(h => {
-        let val = parseFloat(h["Negative Reviews Ratio (%)"]);
-        if (!isNaN(val)) {
-            validRatios.push(val);
-        }
-    });
-    
-    const avgRatio = validRatios.length > 0 ? (validRatios.reduce((a, b) => a + b, 0) / validRatios.length) : null;
+            let rowHtml = `<td class="fw-bold metric-cell" style="padding-left: 25px;">${m[0]}</td>`;
+            
+            compareList.forEach(h => {
+                let value = h[m[1]];
+                
+                // Colorized logic matching your requested palette
+                if (m[1] === "CUSTOM_COMPARE") {
+                    let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
+                    if (avgRatio === null || isNaN(currentRatio)) {
+                        value = 'N/A';
+                    } else {
+                        // Define a 5 percentage point buffer zone
+                        const buffer = 5; 
+                        
+                        if (currentRatio > (avgRatio + buffer)) {
+                            // Significantly higher than average (Worse performance)
+                            value = '<span class="fw-bold" style="color: #bf3100;">Below Average Performance</span>';
+                        } else if (currentRatio < (avgRatio - buffer)) {
+                            // Significantly lower than average (Better performance)
+                            value = '<span class="fw-bold" style="color: #8ea604;">Above Average Performance</span>';
+                        } else {
+                            // Within the +/- 5% margin of error
+                            value = '<span class="fw-bold" style="color: #ec9f05;">Average Performance</span>';
+                        }
+                    }
+                }
+                else if (m[3] === true) { 
+                    const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
+                    value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";
+                } 
+                else {
+                    value = (value !== undefined && value !== null && value !== '') ? `${value}${m[2]}` : 'N/A';
+                }
+                
+                rowHtml += `<td>${value}</td>`;
+            });
 
-    // Categorized Configuration Array
-    const sections = [
-        {
-            id: "review-stats",
-            title: "Review Statistics",
-            collapsed: false,
-            metrics: [
-                ["Negative Review vs Average", "CUSTOM_COMPARE", ""], 
-                ["Negative Reviews Ratio", "Negative Reviews Ratio (%)", "%"],
-                ["Negative Reviews Count (1-3 Stars)", "Negative Reviews Count (1-3 Stars)", ""],
-                ["Total Reviews (All Stars)", "Total Reviews (All Stars)", ""]
-            ]
-        },
-        {
-            id: "general-stats",
-            title: "General Statistics",
-            collapsed: false,
-            metrics: [
-                ["Sector", "Sector", ""],
-                ["Teaching Hospital", "Teaching Hospital ", ""],
-                ["Beds", "Beds", ""],
-                ["Marham Price", "Marham Price", ""],
-                ["Departments", "Department", ""],
-                ["OPD", "OPD", ""],
-                ["Emergency", "Emergency", ""],
-                ["Blood Bank", "Blood Bank", ""]
-            ]
-        },
-        {
-            id: "regulatory-stats",
-            title: "Regulatory Statistics",
-            collapsed: false,
-            metrics: [
-                ["PHC Zone", "PHC Zone", ""],
-                ["Sehat-Card Empaneled", "Sehat-Card Empaneled", ""],
-                ["SCE For What", "SCE For What", "", true]
-            ]
-        },
-        {
-            id: "major-themes",
-            title: "Main Areas in Negative Patient Reviews",
-            collapsed: false,
-            metrics: [
-                ["Environment", "Major Theme: enviornment (%)", "%"],
-                ["Behaviour", "Major Theme: behaviour (%)", "%"],
-                ["Money", "Major Theme: money (%)", "%"],
-                ["Time", "Major Theme: time (%)", "%"],
-                ["Management", "Major Theme: management (%)", "%"],
-                ["Process Specific", "Major Theme: process specific (%)", "%"]
-            ]
-        },
-        {
-            id: "sub-themes",
-            title: "Main Department Related Negative Patient Reviews",
-            collapsed: true,
-            metrics: [
-                ["Nephrology", "Sub-Theme: nephrology (%)", "%"],
-                ["Pharmacy", "Sub-Theme: pharmacy (%)", "%"],
-                ["Gynaecology", "Sub-Theme: gynaecology (%)", "%"],
-                ["Tests", "Sub-Theme: tests (%)", "%"],
-                ["Gastro", "Sub-Theme: gastro (%)", "%"],
-                ["Cardiology", "Sub-Theme: cardiology (%)", "%"],
-                ["Orthopedics", "Sub-Theme: orthopedics (%)", "%"],
-                ["Emergency", "Sub-Theme: emergancy (%)", "%"],
-                ["Diagnosis", "Sub-Theme: diagnosis (%)", "%"],
-                ["Urology", "Sub-Theme: urology (%)", "%"],
-                ["Dentistry", "Sub-Theme: dentistry (%)", "%"],
-                ["Blood", "Sub-Theme: blood (%)", "%"],
-                ["Cancer", "Sub-Theme: cancer (%)", "%"],
-                ["Vaccines", "Sub-Theme: vaccines (%)", "%"],
-                ["Radiology", "Sub-Theme: radiology (%)", "%"],
-                ["ICU", "Sub-Theme: icu (%)", "%"],
-                ["Derma", "Sub-Theme: derma (%)", "%"]
-            ]
-        }
-    ];
+            row.innerHTML = rowHtml;
+            tBody.appendChild(row);
+        });
+    });
 
-    // Render sections and rows dynamically
-    sections.forEach(section => {
-        const headerRow = document.createElement('tr');
-        headerRow.className = `category-header ${section.collapsed ? 'collapsed' : ''}`;
-        headerRow.dataset.target = section.id;
-        headerRow.innerHTML = `
-                    <td colspan="${columnCount}" style="background-color: #e9ecef !important; color: #000 !important; font-weight: 800;">
-                        <span class="toggle-icon">▼</span> ${section.title}
-                    </td>
-                `;        
-        tBody.appendChild(headerRow);
+    tBody.addEventListener('click', (e) => {
+        const header = e.target.closest('.category-header');
+        if (!header) return;
 
-        section.metrics.forEach(m => {
-            const row = document.createElement('tr');
-            row.className = `${section.id}-row`;
-            if (section.collapsed) {
-                row.style.display = 'none';
-            }
+        header.classList.toggle('collapsed');
+        const targetClass = `.${header.dataset.target}-row`;
+        const rows = tBody.querySelectorAll(targetClass);
+        const isCollapsed = header.classList.contains('collapsed');
 
-            let rowHtml = `<td class="fw-bold metric-cell" style="padding-left: 25px;">${m[0]}</td>`;
-            
-            compareList.forEach(h => {
-                let value = h[m[1]];
-                
-                if (m[1] === "CUSTOM_COMPARE") {
-                    let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
-                    if (avgRatio === null || isNaN(currentRatio)) {
-                        value = 'N/A';
-                    } else {
-                        const buffer = 5; 
-                        
-                        if (currentRatio > (avgRatio + buffer)) {
-                            value = '<span class="fw-bold" style="color: #bf3100;">Below Average Performance</span>';
-                        } else if (currentRatio < (avgRatio - buffer)) {
-                            value = '<span class="fw-bold" style="color: #8ea604;">Above Average Performance</span>';
-                        } else {
-                            value = '<span class="fw-bold" style="color: #ec9f05;">Average Performance</span>';
-                        }
-                    }
-                }
-                else if (m[3] === true) { 
-                    const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
-                    value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";
-                } 
-                else {
-                    value = (value !== undefined && value !== null && value !== '') ? `${value}${m[2]}` : 'N/A';
-                }
-                
-                rowHtml += `<td>${value}</td>`;
-            });
-
-            row.innerHTML = rowHtml;
-            tBody.appendChild(row);
-        });
-    });
-
-    tBody.addEventListener('click', (e) => {
-        const header = e.target.closest('.category-header');
-        if (!header) return;
-
-        header.classList.toggle('collapsed');
-        const targetClass = `.${header.dataset.target}-row`;
-        const rows = tBody.querySelectorAll(targetClass);
-        const isCollapsed = header.classList.contains('collapsed');
-
-        rows.forEach(row => {
-            row.style.display = isCollapsed ? 'none' : '';
-        });
-    });
+        rows.forEach(row => {
+            row.style.display = isCollapsed ? 'none' : '';
+        });
+    });
 });
 </script>
 

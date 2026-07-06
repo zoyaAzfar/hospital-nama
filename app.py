@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, abort, send_from_directory
-import sqlite3, os, 
+import sqlite3, os
 
 app = Flask(__name__)
 DB_FILE = "hospitals.db"

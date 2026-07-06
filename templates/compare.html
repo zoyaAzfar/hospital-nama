@@ -110,6 +110,39 @@
         <h2 class="fw-bold mb-0">Hospital Comparison</h2>
     </div>
 
+    <div class="brutal-border p-4 mb-4">
+
+    <h5 class="fw-bold mb-3">Select Hospitals</h5>
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <label>Hospital 1</label>
+            <select id="hospital1" class="form-select"></select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Hospital 2</label>
+            <select id="hospital2" class="form-select"></select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Hospital 3 (Optional)</label>
+            <select id="hospital3" class="form-select">
+                <option value="">None</option>
+            </select>
+        </div>
+
+    </div>
+
+    <button id="compareBtn"
+            class="btn brutal-btn mt-3"
+            style="background-color:#003049;color:white;">
+        Compare Hospitals
+    </button>
+
+</div>
+    
     <div class="brutal-border p-0 overflow-auto mb-5">
         <table class="table table-brutal mb-0" id="compare-table">
             <thead id="compare-thead" class="table-dark text-white">
@@ -146,27 +179,130 @@
 
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const compareList = JSON.parse(localStorage.getItem('compareList')) || [];
-    
-    if (compareList.length < 2) {
-        document.getElementById('compare-table').innerHTML = `
-            <div class="p-5 text-center" style = "border: 2px solid #000000; border-radius: 5px;">
-                <h4>Not enough hospitals selected.</h4>
-                <p>Please go back to the map and select at least 2 hospitals to compare.</p>
-                <a href="{{ url_for('map_view') }}" class="btn brutal-btn mt-3" style="background-color:#780000; color:white !important;">Go to Map</a>
-            </div>
-        `;
-        return;
+let allHospitals = [];
+let compareList = [];
+
+// Elements will be assigned globally once DOM is ready
+let hospital1, hospital2, hospital3, compareBtn;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Properly assign global variables
+    hospital1 = document.getElementById("hospital1");
+    hospital2 = document.getElementById("hospital2");
+    hospital3 = document.getElementById("hospital3");
+    compareBtn = document.getElementById("compareBtn");
+    const tBody = document.getElementById('compare-tbody');
+
+    // 2. Set up event delegation for accordion headers ONCE
+    if (tBody) {
+        tBody.addEventListener('click', (e) => {
+            const header = e.target.closest('.category-header');
+            if (!header) return;
+
+            header.classList.toggle('collapsed');
+            const targetClass = `.${header.dataset.target}-row`;
+            const rows = tBody.querySelectorAll(targetClass);
+            const isCollapsed = header.classList.contains('collapsed');
+
+            rows.forEach(row => {
+                row.style.display = isCollapsed ? 'none' : '';
+            });
+        });
     }
 
+    // 3. Set up Compare Button action safely inside DOM ready
+    compareBtn.addEventListener("click", () => {
+        const selected = [
+            hospital1.value,
+            hospital2.value,
+            hospital3.value
+        ].filter(Boolean);
+
+        if (selected.length < 2) {
+            alert("Please select at least two hospitals.");
+            return;
+        }
+
+        if (new Set(selected).size !== selected.length) {
+            alert("Choose different hospitals.");
+            return;
+        }
+
+        compareList = allHospitals.filter(h =>
+            selected.includes(h["Hospital Name"])
+        );
+
+        buildComparisonTable(compareList);
+    });
+
+    // 4. Fetch data and initialize UI
+    try {
+        const response = await fetch("/api/hospitals");
+        allHospitals = await response.json();
+
+        populateDropdowns();
+
+        const saved = JSON.parse(localStorage.getItem("compareList"));
+        if (saved && saved.length >= 2) {
+            compareList = saved;
+
+            hospital1.value = saved[0]["Hospital Name"] || "";
+            hospital2.value = saved[1]["Hospital Name"] || "";
+            if (saved[2] && hospital3) {
+                hospital3.value = saved[2]["Hospital Name"] || "";
+            }
+
+            buildComparisonTable(compareList);
+        }
+    } catch (error) {
+        console.error("Failed to load hospital data:", error);
+    }
+});
+
+function populateDropdowns() {
+    const dropdowns = [hospital1, hospital2, hospital3];
+
+    dropdowns.forEach(select => {
+        if (!select) return; // Guard clause in case element is missing in HTML
+
+        if (select.id === "hospital3") {
+            select.innerHTML = "<option value=''>None</option>";
+        } else {
+            select.innerHTML = ""; // Clear placeholders if any
+        }
+
+        allHospitals.forEach(hospital => {
+            const option = document.createElement("option");
+            option.value = hospital["Hospital Name"];
+            option.textContent = hospital["Hospital Name"];
+            select.appendChild(option);
+        });
+    });
+}
+
+function buildComparisonTable(compareList) {
     const tHead = document.getElementById('compare-thead');
     const tBody = document.getElementById('compare-tbody');
-    const columnCount = compareList.length + 1;
 
-    // Build Table Headers
+       if (compareList.length < 2) {
+            tHead.innerHTML = "";
+            tBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center p-5">
+                        Please select at least two hospitals.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+    
+    if (!tHead || !tBody) return;
+        
+    tHead.innerHTML = "";
+    tBody.innerHTML = "";
+        
+    const columnCount = compareList.length + 1;
     const hospitalCount = compareList.length;
-    // Allocate 25% to the metric column, divide the remaining 75% equally among hospitals
     const equalWidth = (75 / hospitalCount).toFixed(2); 
     
     let headerHtml = `<tr><th style="width: 25%;">Metric</th>`;
@@ -176,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
     headerHtml += `</tr>`;
     tHead.innerHTML = headerHtml;
 
-    // Calculate Average Negative Reviews Ratio dynamically among the selected items
+    // Calculate Average Negative Reviews Ratio
     let validRatios = [];
     compareList.forEach(h => {
         let val = parseFloat(h["Negative Reviews Ratio (%)"]);
@@ -187,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const avgRatio = validRatios.length > 0 ? (validRatios.reduce((a, b) => a + b, 0) / validRatios.length) : null;
 
-    // Categorized Configuration Array
+    // Configuration Array
     const sections = [
         {
             id: "review-stats",
@@ -264,16 +400,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
-    // Render sections and rows dynamically
     sections.forEach(section => {
         const headerRow = document.createElement('tr');
         headerRow.className = `category-header ${section.collapsed ? 'collapsed' : ''}`;
         headerRow.dataset.target = section.id;
         headerRow.innerHTML = `
-                    <td colspan="${columnCount}" style="background-color: #e9ecef !important; color: #000 !important; font-weight: 800;">
-                        <span class="toggle-icon">▼</span> ${section.title}
-                    </td>
-                `;        
+            <td colspan="${columnCount}" style="background-color: #e9ecef !important; color: #000 !important; font-weight: 800; cursor: pointer;">
+                <span class="toggle-icon">${section.collapsed ? '▶' : '▼'}</span> ${section.title}
+            </td>
+        `;        
         tBody.appendChild(headerRow);
 
         section.metrics.forEach(m => {
@@ -288,23 +423,17 @@ document.addEventListener("DOMContentLoaded", () => {
             compareList.forEach(h => {
                 let value = h[m[1]];
                 
-                // Colorized logic matching your requested palette
                 if (m[1] === "CUSTOM_COMPARE") {
                     let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
                     if (avgRatio === null || isNaN(currentRatio)) {
                         value = 'N/A';
                     } else {
-                        // Define a 5 percentage point buffer zone
                         const buffer = 5; 
-                        
                         if (currentRatio > (avgRatio + buffer)) {
-                            // Significantly higher than average (Worse performance)
                             value = '<span class="fw-bold" style="color: #bf3100;">Below Average Performance</span>';
                         } else if (currentRatio < (avgRatio - buffer)) {
-                            // Significantly lower than average (Better performance)
                             value = '<span class="fw-bold" style="color: #8ea604;">Above Average Performance</span>';
                         } else {
-                            // Within the +/- 5% margin of error
                             value = '<span class="fw-bold" style="color: #ec9f05;">Average Performance</span>';
                         }
                     }
@@ -324,21 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
             tBody.appendChild(row);
         });
     });
-
-    tBody.addEventListener('click', (e) => {
-        const header = e.target.closest('.category-header');
-        if (!header) return;
-
-        header.classList.toggle('collapsed');
-        const targetClass = `.${header.dataset.target}-row`;
-        const rows = tBody.querySelectorAll(targetClass);
-        const isCollapsed = header.classList.contains('collapsed');
-
-        rows.forEach(row => {
-            row.style.display = isCollapsed ? 'none' : '';
-        });
-    });
-});
+}
+    
 </script>
 
 </body>

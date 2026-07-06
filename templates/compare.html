@@ -78,18 +78,6 @@
     word-break: normal;
     overflow-wrap: normal;
 }
-
-                /* Hide the table headers and body completely if they have no inner HTML */
-        #compare-thead:empty,
-        #compare-tbody:empty {
-            display: none;
-        }
-        
-        /* Optional: If the table element itself has a wrapper border, hide the whole table when empty */
-        table:has(#compare-tbody:empty) {
-            border: none;
-            outline: none;
-        }
                 
 /**
         .table-brutal {
@@ -296,21 +284,21 @@ function populateDropdowns() {
 function buildComparisonTable(compareList) {
     const tHead = document.getElementById('compare-thead');
     const tBody = document.getElementById('compare-tbody');
-
-       if (compareList.length < 2) {
-            tHead.innerHTML = "";
-            tBody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center p-5">
-                        Please select at least two hospitals.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
+    const tableContainer = document.getElementById('compare-table-container'); // Your wrapper div
     
     if (!tHead || !tBody) return;
         
+    // If there aren't enough hospitals, clear the table, hide the container, and exit
+    if (!compareList || compareList.length < 2) {
+        tHead.innerHTML = "";
+        tBody.innerHTML = "";
+        if (tableContainer) tableContainer.style.display = 'none';
+        return;
+    }
+
+    // Otherwise, make sure the table container is visible
+    if (tableContainer) tableContainer.style.display = 'block';
+    
     tHead.innerHTML = "";
     tBody.innerHTML = "";
         

@@ -256,6 +256,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
+    
+// review helper function
+function formatReviews(rawText) {
+    if (!rawText || typeof rawText !== 'string') {
+        return 'No documentation entry saved.';
+    }
+
+    const reviews = rawText
+        .split('||')
+        .map(r => r.trim())
+        .filter(r => r.length > 0);
+
+    if (reviews.length === 0) {
+        return 'No documentation entry saved.';
+    }
+
+    const formattedItems = reviews.map(review => {
+        const capitalized = review.charAt(0).toUpperCase() + review.slice(1);
+        return `<li class="mb-1">${capitalized}</li>`;
+    });
+
+    return `<ul class="ps-3 mb-0 mt-1 text-start">${formattedItems.join('')}</ul>`;
+}
+
 function calculateGlobalBenchmarks(hospitalData) {
     let sectors = {};
     hospitalData.forEach(h => {
@@ -493,13 +517,15 @@ function buildMajorThemesChart(labels, dataValues, documentationTexts) {
                     Click this slice to drill down.
                 `;
         
-            } else {
+            } } else {
+
+                const formattedDocs = formatReviews(activeDocs[idx]);
         
                 box.innerHTML = `
                     <strong>${name} (${currentRatio}%${benchmarkText})</strong>
                     ${performanceText}
                     <br>
-                    "${activeDocs[idx] || "No documentation."}"
+                    ${formattedDocs}
                 `;
         
             }
@@ -561,15 +587,19 @@ function buildSubThemesChart(labels, dataValues, documentationTexts) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: true, position: 'bottom' } },
-            // CHANGED: Swapped onHover out for onClick to match the first chart's behavior
             onClick: (event, chartElements) => {
                 const box = document.getElementById('sub-review');
                 if (chartElements && chartElements.length > 0) {
                     const idx = chartElements[0].index;
-                    box.innerHTML = `<strong>${activeLabels[idx]} (${activeValues[idx]}%):</strong><br><span class="text-dark">"${activeDocs[idx] || 'No matching sub-theme review document sample found.'}"</span>`;
+        
+                    // Call helper here!
+                    const formattedDocs = formatReviews(activeDocs[idx]);
+        
+                    box.innerHTML = `<strong>${activeLabels[idx]} (${activeValues[idx]}%):</strong>${formattedDocs}`;
                 }
             }
         }
+
     });
 }
     

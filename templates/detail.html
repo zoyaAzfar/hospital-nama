@@ -74,14 +74,14 @@ h1,h5,h6{font-weight:700}
 
 
    
-<div class="container py-4" style = "text-align: center;">
+<div class="container py-4" style = "text-align: left;">
  <div class="mb-3">
         <a href="{{ url_for('map_view') }}" class="btn brutal-btn" style = "background-color:#780000; color:white !important; ">← Back to Main Map</a>
     </div>
     <div class="p-4 mb-4">
         <h1 id="hosp-name" class="text-dark mb-0">Loading Hospital Profile...</h1>
         <p id="meta-sector-tag" class="text-muted fw-bold mb-3"></p>
-        <div class="row mt-2">
+        <div class="row mt-2" style = "text-align:center !important" >
             <div class="col-md-3 col-6 border-end text-start"><small class="text-muted d-block">Total Reviews</small><strong id="meta-total-reviews" class="fs-5">-</strong></div>
             <div class="col-md-3 col-6 border-end text-start"><small class="text-muted d-block">Negative Reviews Count</small><strong id="meta-neg-count" class="fs-5">-</strong></div>
             <div class="col-md-3 col-6 text-start"><small class="text-muted d-block">Negative Review Ratio</small><strong id="meta-neg-ratio" class="fs-5">-</strong></div>

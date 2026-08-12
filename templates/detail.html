@@ -74,7 +74,7 @@ h1,h5,h6{font-weight:700}
 
 
    
-<div class="container py-4" style = "text-align: left;">
+<div class="container py-4" style = "text-align: center;">
  <div class="mb-3">
         <a href="{{ url_for('map_view') }}" class="btn brutal-btn" style = "background-color:#780000; color:white !important; ">← Back to Main Map</a>
     </div>
@@ -117,17 +117,19 @@ h1,h5,h6{font-weight:700}
             
             <div class="col-12 pt-2 mt-3">
                 <small class="text-muted d-block mb-1">Available Departments</small>
-                <div id="stat-department" class="fs-6 text-dark fw-bold" style="line-height: 1.5; word-break: break-word;">-</div>
+                <div id="stat-department" class="fs-6 text-dark" style="line-height: 1.5; word-break: break-word;">-</div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="col-md-6 col-12">
-        <div class="p-4 border border-2  border-dark rounded bg-white h-100">
-            <h4 class="fw-bold mb-3 text-dark">Regulatory Statistics</h4>
-            
-            <div class="mb-4 pb-3 border-bottom border-dark">
+    <div class="p-4 border border-2 border-dark rounded bg-white h-100 d-flex flex-column">
+        
+        <h4 class="fw-bold mb-3 text-dark">Regulatory Statistics</h4>
+        
+        <div class="flex-fill d-flex flex-column justify-content-center pb-3 border-bottom border-dark">
+            <div>
                 <span class="fw-bold text-dark">
                     PHC Zone:
                     <span id="stat-phc-zone">-</span>
@@ -135,23 +137,24 @@ h1,h5,h6{font-weight:700}
             
                 <p id="stat-phc-desc" class="text-muted small mt-2 d-none"></p>
             </div>
-                    
-           <div class="mb-4 pb-3 mt-3" id="sehat-details">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                     <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span></span>
-                </div>
-                <div>
-                    <small id="stat-sehat-for" class="text-muted">-</small>
-                </div>
+        </div>
                 
-                <p class="text-muted small mb-0"> 
-                    Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital">website</a>
-                    for the updated list of empaneled hospitals or contact the hospital directly to confirm the availability of service. 
-                </p>
+        <div class="flex-fill d-flex flex-column justify-content-center pt-3" id="sehat-details">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                 <span class="fw-bold text-dark d-block">Sehat-Card Empaneled: <span id="stat-sehat-empaneled">-</span></span>
+            </div>
+            <div>
+                <small id="stat-sehat-for" class="text-muted">-</small>
             </div>
             
+            <p class="text-muted small mb-0 mt-2"> 
+                Sehat-Card facilities may change without notice. Please check their <a href="https://npqsc.punjab.gov.pk/hospital" target="_blank" rel="noopener noreferrer">website</a>
+                for the updated list of empaneled hospitals or contact the hospital directly to confirm the availability of service. 
+            </p>
         </div>
         
+    </div>
+</div>
     </div>
 </div>
 
@@ -378,32 +381,26 @@ function processTargetPayload(hosp) {
     switch(phcZoneValue) {
         case 'green':
             phcBadge.style.backgroundColor = "#d1e7dd";
-            phcBadge.style.color = "#0f5132";
             phcDesc.innerText = "Green status indicates good complaince of MSDS. The hospital meets the basic benchmark of quality.";
             break;
         case 'blue':
             phcBadge.style.backgroundColor = "#cfe2ff";
-            phcBadge.style.color = "#084298";
             phcDesc.innerText = "Blue status indicates an MSDS compliance score of 70% and above, but it does not have a license yet. These hospitals can enter the Green zone with some effort.";
             break;
         case 'renewal':
             phcBadge.style.backgroundColor = "#fff3cd";
-            phcBadge.style.color = "#664d03";
             phcDesc.innerText = "Renewal status indicates that the hospital was Green (good complaince with MSDS) but needs to get its license renewed.";
             break;
         case 'grey':
             phcBadge.style.backgroundColor = "#f8f9fa";
-            phcBadge.style.color = "#212529";
             phcDesc.innerText = "Grey status indicates an uninspected healthcare facility. The MSDS compliance status of this hospital is unknown.";
             break;
         case 'red':
             phcBadge.style.backgroundColor = "#f8d7da";
-            phcBadge.style.color = "#842029";
             phcDesc.innerText = "Red status indicates a MSDS compliance score of 49% and below. This hospital has poor quality of care and compromised patient safety.";
             break;
         default:
             phcBadge.style.backgroundColor = "#e2e3e5";
-            phcBadge.style.color = "#41464b";
             phcDesc.innerText = "The PHC has not revealed any information about this hospital's zone status.";
             break;
     }

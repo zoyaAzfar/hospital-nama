@@ -271,6 +271,42 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+    /**
+ * Formats and applies relative color coding for percentage/numeric metrics.
+ * Lower values = Green (Better), Higher values = Red (Worse).
+ */
+function getRelativeStyledValue(currentValueStr, allValuesList, unit = "%") {
+    const currentVal = parseFloat(currentValueStr);
+
+    // If missing or invalid data, return N/A
+    if (isNaN(currentVal)) return "N/A";
+
+    // Extract valid numbers to find min and max
+    const validNums = allValuesList
+        .map(v => parseFloat(v))
+        .filter(v => !isNaN(v));
+
+    // If all compared values are identical or only 1 valid value exists, return neutral format
+    const minVal = Math.min(...validNums);
+    const maxVal = Math.max(...validNums);
+
+    if (minVal === maxVal) {
+        return `${currentVal}${unit}`;
+    }
+
+    // Apply conditional coloring based on comparison
+    if (currentVal === minVal) {
+        // Best performing (Lowest negative review ratio)
+        return `<span class="fw-bold" style="color: #8ea604;">${currentVal}${unit}</span>`;
+    } else if (currentVal === maxVal) {
+        // Worst performing (Highest negative review ratio)
+        return `<span class="fw-bold" style="color: #bf3100;">${currentVal}${unit}</span>`;
+    }
+
+    // Middle values (if comparing 3+ hospitals)
+    return `${currentVal}${unit}`;
+}
+    
 function populateDropdowns() {
     const dropdowns = [hospital1, hospital2, hospital3];
 
@@ -373,19 +409,21 @@ function buildComparisonTable(compareList) {
                 ["SCE For What", "SCE For What", "", true]
             ]
         },
-        {
-            id: "major-themes",
-            title: "Main Areas in Negative Patient Reviews",
-            collapsed: false,
-            metrics: [
-                ["Environment", "Major Theme: enviornment (%)", "%"],
-                ["Behaviour", "Major Theme: behaviour (%)", "%"],
-                ["Money", "Major Theme: money (%)", "%"],
-                ["Time", "Major Theme: time (%)", "%"],
-                ["Management", "Major Theme: management (%)", "%"],
-                ["Process Specific", "Major Theme: process specific (%)", "%"]
-            ]
-        },
+        // Example Configuration:
+{
+    id: "major-themes",
+    title: "Main Areas in Negative Patient Reviews",
+    collapsed: false,
+    metrics: [
+        // [ Label, Key, Unit, IsConditional, IsRelativeComparison ]
+        ["Environment", "Major Theme: enviornment (%)", "%", false, true],
+        ["Behaviour", "Major Theme: behaviour (%)", "%", false, true],
+        ["Money", "Major Theme: money (%)", "%", false, true],
+        ["Time", "Major Theme: time (%)", "%", false, true],
+        ["Management", "Major Theme: management (%)", "%", false, true],
+        ["Process Specific", "Major Theme: process specific (%)", "%", false, true]
+    ]
+},
         {
             id: "sub-themes",
             title: "Main Department Related Negative Patient Reviews",
@@ -424,46 +462,56 @@ function buildComparisonTable(compareList) {
         tBody.appendChild(headerRow);
 
         section.metrics.forEach(m => {
-            const row = document.createElement('tr');
-            row.className = `${section.id}-row`;
-            if (section.collapsed) {
-                row.style.display = 'none';
+    const row = document.createElement('tr');
+    row.className = `${section.id}-row`;
+    if (section.collapsed) {
+        row.style.display = 'none';
+    }
+
+    let rowHtml = `<td class="fw-bold metric-cell" style="padding-left: 25px;">${m[0]}</td>`;
+
+    // Extract all hospital values for this metric up front for relative comparison
+    const allMetricValues = compareList.map(h => h[m[1]]);
+
+    compareList.forEach(h => {
+        let value = h[m[1]];
+
+        // 1. Custom Compare (Overall Performance)
+        if (m[1] === "CUSTOM_COMPARE") {
+            let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
+            if (avgRatio === null || isNaN(currentRatio)) {
+                value = 'N/A';
+            } else {
+                const buffer = 5; 
+                if (currentRatio > (avgRatio + buffer)) {
+                    value = '<span class="fw-bold" style="color: #bf3100;">Below Average Performance</span>';
+                } else if (currentRatio < (avgRatio - buffer)) {
+                    value = '<span class="fw-bold" style="color: #8ea604;">Above Average Performance</span>';
+                } else {
+                    value = '<span class="fw-bold" style="color: #ec9f05;">Average Performance</span>';
+                }
             }
+        }
+        // 2. Relative Highlighting (Green = Lowest %, Red = Highest %)
+        else if (m[4] === true) { 
+            value = getRelativeStyledValue(value, allMetricValues, m[2]);
+        }
+        // 3. Conditional Sehat Card check
+        else if (m[3] === true) { 
+            const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
+            value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";
+        } 
+        // 4. Default Formatting
+        else {
+            value = (value !== undefined && value !== null && value !== '') ? `${value}${m[2]}` : 'N/A';
+        }
 
-            let rowHtml = `<td class="fw-bold metric-cell" style="padding-left: 25px;">${m[0]}</td>`;
-            
-            compareList.forEach(h => {
-                let value = h[m[1]];
-                
-                if (m[1] === "CUSTOM_COMPARE") {
-                    let currentRatio = parseFloat(h["Negative Reviews Ratio (%)"]);
-                    if (avgRatio === null || isNaN(currentRatio)) {
-                        value = 'N/A';
-                    } else {
-                        const buffer = 5; 
-                        if (currentRatio > (avgRatio + buffer)) {
-                            value = '<span class="fw-bold" style="color: #bf3100;">Below Average Performance</span>';
-                        } else if (currentRatio < (avgRatio - buffer)) {
-                            value = '<span class="fw-bold" style="color: #8ea604;">Above Average Performance</span>';
-                        } else {
-                            value = '<span class="fw-bold" style="color: #ec9f05;">Average Performance</span>';
-                        }
-                    }
-                }
-                else if (m[3] === true) { 
-                    const isEmpaneled = h["Sehat-Card Empaneled"] === "Yes";
-                    value = isEmpaneled ? (h["SCE For What"] || "Not specified") : "-";
-                } 
-                else {
-                    value = (value !== undefined && value !== null && value !== '') ? `${value}${m[2]}` : 'N/A';
-                }
-                
-                rowHtml += `<td>${value}</td>`;
-            });
+        rowHtml += `<td>${value}</td>`;
+    });
 
-            row.innerHTML = rowHtml;
-            tBody.appendChild(row);
-        });
+    row.innerHTML = rowHtml;
+    tBody.appendChild(row);
+});
     });
 }
     

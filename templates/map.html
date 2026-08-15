@@ -122,11 +122,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold d-flex justify-content-between">
-                            <span>Search Radius</span>
-                            <strong id="radius-val">10 km</strong>
-                        </label>
-                        <input type="range" class="form-range" id="radius-slider" min="1" max="30" value="10">
-                    </div>
+                        <span>Max Drive Time</span>
+                        <strong id="radius-val">15 mins</strong>
+                    </label>
+                    <input type="range" class="form-range" id="radius-slider" min="5" max="60" step="5" value="15">
+                </div>
                 </div>
                 
                 <div class="brutal-border p-3 mb-4">
@@ -280,9 +280,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Listen for radius changes
     document.getElementById('radius-slider').addEventListener('input', (e) => {
-        document.getElementById('radius-val').innerText = e.target.value + " km";
-        filterAndRenderData();
-    });
+    document.getElementById('radius-val').innerText = e.target.value + " mins";
+    filterAndRenderData();
+});
 
     // Recommendations placeholder hook
     document.getElementById('btn-get-recs').addEventListener('click', () => {
@@ -352,7 +352,14 @@ function setupSidebarAutocomplete(inputEl) {
 
 function updateSpatialLayers() {
     if (!mapInitialized) return;
-    const radiusMeters = parseInt(document.getElementById('radius-slider').value) * 1000;
+    
+    const targetMins = parseFloat(document.getElementById('radius-slider').value);
+    
+    // Estimate radius for visual map circle:
+    // Assuming an average urban speed of ~30 km/h (0.5 km per min)
+    const estimatedKm = targetMins * 0.5; 
+    const radiusMeters = estimatedKm * 1000;
+
     userMarker.position = userLocation;
     radiusCircle.setCenter(userLocation);
     radiusCircle.setRadius(radiusMeters);
@@ -361,35 +368,39 @@ function updateSpatialLayers() {
 
 function filterAndRenderData() {
     if (!mapInitialized) return;
-    const targetRadiusKm = parseFloat(document.getElementById('radius-slider').value);
+
+    const targetMaxMinutes = parseFloat(document.getElementById('radius-slider').value);
     updateSpatialLayers();
 
-    // Clear old map markers
     mapMarkers.forEach(m => m.map = null);
     mapMarkers = [];
 
     let preFilteredHospitals = [];
     let destinations = [];
 
+    const maxPossibleCrowKm = targetMaxMinutes * 1.0; 
+
     hospitalData.forEach(hosp => {
         let lat = NaN, lng = NaN;
         if (hosp.Coordinates && typeof hosp.Coordinates === 'string') {
             const parts = hosp.Coordinates.split(',');
-            if (parts.length === 2) { lat = parseFloat(parts[0].trim()); lng = parseFloat(parts[1].trim()); }
+            if (parts.length === 2) { 
+                lat = parseFloat(parts[0].trim()); 
+                lng = parseFloat(parts[1].trim()); 
+            }
         }
         if (isNaN(lat) || isNaN(lng)) return;
         hosp.latitude = lat; hosp.longitude = lng;
 
         const roughDistance = roughBirdDistance(userLocation, { lat, lng });
-        if (roughDistance <= targetRadiusKm) {
+        if (roughDistance <= maxPossibleCrowKm) {
             preFilteredHospitals.push(hosp);
             destinations.push(new google.maps.LatLng(lat, lng));
         }
     });
-    
+
     if (destinations.length === 0) { renderUIList([]); return; }
 
-    // Distance Matrix limits to maximum of 25 targets per request
     const batchDestinations = destinations.slice(0, 25);
     const batchHospitals = preFilteredHospitals.slice(0, 25);
 
@@ -407,31 +418,31 @@ function filterAndRenderData() {
         batchHospitals.forEach((hosp, index) => {
             const element = results[index];
             if (element.status === "OK") {
-                const roadDistKm = element.distance.value / 1000;
-                if (roadDistKm > targetRadiusKm) {
-                    return; // Skip this hospital, it's too far by road!
+                const durationInSeconds = element.duration_in_traffic ? element.duration_in_traffic.value : element.duration.value;
+                const durationMinutes = durationInSeconds / 60;
+
+                if (durationMinutes > targetMaxMinutes) {
+                    return;  
                 }
 
                 hosp.roadDistanceText = element.distance.text;
-                hosp.roadDistanceValueKm = roadDistKm;
+                hosp.roadDistanceValueKm = element.distance.value / 1000;
                 hosp.durationText = element.duration_in_traffic ? element.duration_in_traffic.text : element.duration.text;
-                hosp.durationSeconds = element.duration_in_traffic ? element.duration_in_traffic.value : element.duration.value;
+                hosp.durationSeconds = durationInSeconds;
                 finalRenderList.push(hosp);
 
-                // Dynamically color pins based on travel duration
-                let pinColor = "#2a9d8f"; 
-                const minutes = hosp.durationSeconds / 60;
-                if (minutes > 7 && minutes <= 15) pinColor = "#e9c46a"; 
-                if (minutes > 15) pinColor = "#e63946"; 
+                let pinColor = "#2a9d8f";  
+                if (durationMinutes > 10 && durationMinutes <= 20) pinColor = "#e9c46a";  
+                if (durationMinutes > 20) pinColor = "#e63946";   
 
                 const hospitalPin = new google.maps.marker.PinElement({
                     background: pinColor, borderColor: "#ffffff", glyphColor: "#ffffff"
                 });
 
                 const marker = new google.maps.marker.AdvancedMarkerElement({
-                    map: map, 
+                    map: map,
                     position: { lat: parseFloat(hosp.latitude), lng: parseFloat(hosp.longitude) },
-                    content: hospitalPin.element, 
+                    content: hospitalPin.element,
                     title: hosp["Hospital Name"]
                 });
 
@@ -444,8 +455,8 @@ function filterAndRenderData() {
                         <div style="color: black; padding: 5px; font-family: 'Noto Sans';">
                             <h6 style="margin:0 0 5px 0; font-weight:bold;">${hosp["Hospital Name"]}</h6>
                             <p style="margin:0 0 8px 0; font-size:0.85rem;">
-                                Road Distance: <b>${hosp.roadDistanceText}</b><br>
-                                Live Drive: <b>${hosp.durationText}</b>
+                                Live Drive: <b>${hosp.durationText}</b><br>
+                                Distance: <b>${hosp.roadDistanceText}</b>
                             </p>
                             <div class="d-flex gap-2">
                                 <a href="/hospital/${hosp.id}" class="btn brutal-btn btn-sm w-50" style="font-size: 0.8rem;">View</a>
@@ -459,7 +470,8 @@ function filterAndRenderData() {
                 mapMarkers.push(marker);
             }
         });
-        finalRenderList.sort((a, b) => a.roadDistanceValueKm - b.roadDistanceValueKm);
+
+        finalRenderList.sort((a, b) => a.durationSeconds - b.durationSeconds);
         renderUIList(finalRenderList);
     });
 }

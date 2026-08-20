@@ -198,57 +198,66 @@
 
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&v=weekly&libraries=marker,places"></script>
 <script>
-const lahoreBounds = {
-    north: 31.65, south: 31.25, west: 74.05, east: 74.55
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-    const homeSearchInput = document.getElementById('home-location-search');
-    if (homeSearchInput) {
-        setupAutocomplete(homeSearchInput);
-    }
-});
-
-function setupAutocomplete(inputEl) {
-    if (!inputEl) return;
+    const lahoreBounds = {
+        north: 31.65, south: 31.25, west: 74.05, east: 74.55
+    };
     
-    // Set up Google Autocomplete restricted to Lahore
-    const ac = new google.maps.places.Autocomplete(inputEl, {
-        bounds: lahoreBounds, 
-        strictBounds: true, 
-        fields: ['geometry', 'name']
+    function isInLahore(lat, lng) {
+        return (
+            lat >= lahoreBounds.south &&
+            lat <= lahoreBounds.north &&
+            lng >= lahoreBounds.west &&
+            lng <= lahoreBounds.east
+        );
+    }
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        const homeSearchInput = document.getElementById('home-location-search');
+        if (homeSearchInput) {
+            setupAutocomplete(homeSearchInput);
+        }
     });
-
-    // Handle redirection with data parameters
-    function handlePlaceSelection(place, currentInputValue) {
-        if (!place || !place.geometry || !place.geometry.location) return;
-
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
+    
+    function setupAutocomplete(inputEl) {
+        if (!inputEl) return;
         
-        // Pass coordinates to your Flask route via URL Query Parameters
-        window.location.href = `/map?lat=${lat}&lng=${lng}&search=${encodeURIComponent(currentInputValue)}`;
-    }
-
-    // Event 1: User selects an option from the dropdown menu
-    ac.addListener('place_changed', () => {
-        const place = ac.getPlace();
-        handlePlaceSelection(place, inputEl.value);
-    });
-
-    // Event 2: User explicitly clicks the red Search button magnifying glass
-    const searchBtn = document.getElementById('home-search-btn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            const place = ac.getPlace();
-            if (place && place.geometry) {
-                handlePlaceSelection(place, inputEl.value);
-            } else {
-                alert("Please select a valid location from the dropdown suggestions.");
-            }
+        const ac = new google.maps.places.Autocomplete(inputEl, {
+            bounds: lahoreBounds, 
+            strictBounds: true, 
+            componentRestrictions: { country: 'pk' }, // Narrows down suggestions to Pakistan
+            fields: ['geometry', 'name']
         });
+    
+        function handlePlaceSelection(place, currentInputValue) {
+            if (!place || !place.geometry || !place.geometry.location) {
+                alert("Please select a valid location from the dropdown suggestions.");
+                return;
+            }
+    
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            
+            if (!isInLahore(lat, lng)) {
+                alert("Selected location is outside the permitted Lahore bounds.");
+                return;
+            }
+            
+            window.location.href = `/map?lat=${lat}&lng=${lng}&search=${encodeURIComponent(currentInputValue)}`;
+        }
+    
+        ac.addListener('place_changed', () => {
+            const place = ac.getPlace();
+            handlePlaceSelection(place, inputEl.value);
+        });
+    
+        const searchBtn = document.getElementById('home-search-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => {
+                const place = ac.getPlace();
+                handlePlaceSelection(place, inputEl.value);
+            });
+        }
     }
-}
 </script>
 </body>
 </html>

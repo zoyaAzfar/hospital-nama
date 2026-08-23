@@ -518,11 +518,7 @@ function buildComparisonTable(compareList) {
 </script>
 <script>
   window.HOSPITAL_CHAT_CONFIG = {
-    getHospitalIds: () => {
-      const idA = document.getElementById('hospitalASelect')?.value;
-      const idB = document.getElementById('hospitalBSelect')?.value;
-      return [idA, idB].filter(Boolean).map(Number);
-    }
+    getHospitalIds: () => compareList.map(h => h.id)
   };
 </script>
 <link rel="stylesheet" href="{{ url_for('static', filename='chat-widget.css') }}">

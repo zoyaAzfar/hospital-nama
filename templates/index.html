@@ -114,6 +114,49 @@
             <input type="text" id="home-location-search" class="form-control brutal-input" placeholder="e.g. DHA Phase 5...">
             <button id="home-search-btn" class="btn btn-dark brutal-input" type="button" style="background-color:#780000; margin-left: -10px; z-index: 5; width:100px;"><span class="material-symbols-outlined">search</span></button>
                 </div>
+
+            <div class="mx-auto mt-3" style="max-width: 800px;">
+                <button id="filter-toggle-btn" class="btn btn-sm brutal-input" type="button" style="background-color:#003049; color:white;">
+                    <span class="material-symbols-outlined align-middle" style="font-size:16px; vertical-align:middle;">tune</span>
+                    Filter Hospitals
+                </button>
+            </div>
+
+            <div id="home-filter-panel" class="brutal-border p-4 mx-auto mt-3 text-start d-none" style="max-width: 800px; background-color:#fff;">
+                <h5 class="fw-bold mb-3">Filter Hospitals</h5>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold d-flex justify-content-between">
+                        <span>Price Range</span>
+                        <strong id="price-range-val">—</strong>
+                    </label>
+                    <div id="price-slider" class="mt-4 mb-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Departments Needed</label>
+                    <select id="department-filter" class="form-select form-select-sm" multiple size="5"></select>
+                    <small class="text-muted">Hold Ctrl / Cmd to select more than one. Hospitals must offer all selected departments.</small>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-positive-reviews">
+                    <label class="form-check-label small fw-bold" for="filter-positive-reviews">Mostly Positive Reviews (&gt;50%)</label>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-sehat-card">
+                    <label class="form-check-label small fw-bold" for="filter-sehat-card">Sehat Sahulat Card Accepted</label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="filter-large-capacity">
+                    <label class="form-check-label small fw-bold" for="filter-large-capacity">Large Capacity (Top 25% by Beds)</label>
+                </div>
+
+                <button id="filter-reset-btn" class="btn btn-sm btn-outline-dark w-100 brutal-input" type="button">Reset Filters</button>
+                <p class="small text-muted mt-2 mb-0">Filters apply when you search a location, and carry over to the map.</p>
+            </div>
         </div>
     </div>
 </main>
@@ -196,6 +239,35 @@
     </div>
 </footer>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+<style>
+    #price-slider.noUi-target {
+        background: #e9ecef;
+        border-radius: 0;
+        border: 2px solid #000;
+        box-shadow: none;
+        height: 8px;
+    }
+    #price-slider .noUi-connect {
+        background: #003049;
+    }
+    #price-slider .noUi-handle {
+        border-radius: 0 !important;
+        background: #780000 !important;
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        width: 18px !important;
+        height: 24px !important;
+        top: -9px !important;
+        right: -9px !important;
+        cursor: pointer;
+    }
+    #price-slider .noUi-handle:before,
+    #price-slider .noUi-handle:after {
+        display: none;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&v=weekly&libraries=marker,places"></script>
 <script>
     const lahoreBounds = {
@@ -210,13 +282,137 @@
             lng <= lahoreBounds.east
         );
     }
-    
+
+    // --- FILTER STATE (Homepage) ---
+    let priceSlider = null;
+
     document.addEventListener("DOMContentLoaded", () => {
         const homeSearchInput = document.getElementById('home-location-search');
         if (homeSearchInput) {
             setupAutocomplete(homeSearchInput);
         }
+
+        initHomeFilters();
     });
+
+    async function initHomeFilters() {
+        const filterToggleBtn = document.getElementById('filter-toggle-btn');
+        const filterPanel = document.getElementById('home-filter-panel');
+        const resetBtn = document.getElementById('filter-reset-btn');
+
+        if (filterToggleBtn && filterPanel) {
+            filterToggleBtn.addEventListener('click', () => {
+                filterPanel.classList.toggle('d-none');
+            });
+        }
+
+        try {
+            const res = await fetch('/api/hospitals');
+            const data = await res.json();
+            setupHomeFilterControls(data);
+        } catch (err) {
+            console.error("Failed to load hospital data for filters:", err);
+            if (filterToggleBtn) filterToggleBtn.classList.add('d-none');
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                if (priceSlider) priceSlider.reset();
+                const deptSelect = document.getElementById('department-filter');
+                if (deptSelect) {
+                    Array.from(deptSelect.options).forEach(opt => opt.selected = false);
+                }
+                ['filter-positive-reviews', 'filter-sehat-card', 'filter-large-capacity'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = false;
+                });
+            });
+        }
+    }
+
+    function setupHomeFilterControls(data) {
+        // --- Price bounds, computed from live data ---
+        const prices = data
+            .map(h => parseFloat(h["Marham Price"]))
+            .filter(v => !isNaN(v));
+
+        const minPrice = prices.length ? Math.min(...prices) : 0;
+        const maxPrice = prices.length ? Math.max(...prices) : 10000;
+
+        const sliderEl = document.getElementById('price-slider');
+        const priceLabel = document.getElementById('price-range-val');
+
+        if (sliderEl && window.noUiSlider) {
+            priceSlider = noUiSlider.create(sliderEl, {
+                start: [minPrice, maxPrice],
+                connect: true,
+                step: 100,
+                range: { min: minPrice, max: maxPrice },
+                format: {
+                    to: v => Math.round(v),
+                    from: v => Number(v)
+                }
+            });
+
+            priceSlider.on('update', (values) => {
+                if (priceLabel) {
+                    priceLabel.innerText = `Rs ${Number(values[0]).toLocaleString()} - Rs ${Number(values[1]).toLocaleString()}`;
+                }
+            });
+        }
+
+        // --- Department options, gathered from every hospital's comma-separated list ---
+        const deptSet = new Set();
+        data.forEach(h => {
+            const raw = h["Department"];
+            if (raw && typeof raw === "string") {
+                raw.split(',').forEach(d => {
+                    const trimmed = d.trim();
+                    if (trimmed) deptSet.add(trimmed);
+                });
+            }
+        });
+
+        const deptSelect = document.getElementById('department-filter');
+        if (deptSelect) {
+            deptSelect.innerHTML = "";
+            Array.from(deptSet).sort().forEach(dep => {
+                const opt = document.createElement('option');
+                opt.value = dep;
+                opt.textContent = dep;
+                deptSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // Builds a query string from the current filter controls so choices
+    // made on the homepage carry over to the map page.
+    function buildFilterQueryParams() {
+        const params = new URLSearchParams();
+
+        if (priceSlider) {
+            const [min, max] = priceSlider.get().map(Number);
+            params.set('price_min', min);
+            params.set('price_max', max);
+        }
+
+        const deptSelect = document.getElementById('department-filter');
+        if (deptSelect) {
+            const selected = Array.from(deptSelect.selectedOptions).map(o => o.value);
+            if (selected.length) params.set('departments', selected.join(','));
+        }
+
+        const positiveEl = document.getElementById('filter-positive-reviews');
+        if (positiveEl && positiveEl.checked) params.set('positive_reviews', '1');
+
+        const sehatEl = document.getElementById('filter-sehat-card');
+        if (sehatEl && sehatEl.checked) params.set('sehat_card', '1');
+
+        const capacityEl = document.getElementById('filter-large-capacity');
+        if (capacityEl && capacityEl.checked) params.set('large_capacity', '1');
+
+        return params;
+    }
     
     function setupAutocomplete(inputEl) {
         if (!inputEl) return;
@@ -241,8 +437,13 @@
                 alert("Selected location is outside the permitted Lahore bounds.");
                 return;
             }
-            
-            window.location.href = `/map?lat=${lat}&lng=${lng}&search=${encodeURIComponent(currentInputValue)}`;
+
+            const filterParams = buildFilterQueryParams();
+            filterParams.set('lat', lat);
+            filterParams.set('lng', lng);
+            filterParams.set('search', currentInputValue);
+
+            window.location.href = `/map?${filterParams.toString()}`;
         }
     
         ac.addListener('place_changed', () => {

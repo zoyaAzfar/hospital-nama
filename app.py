@@ -6,7 +6,7 @@ DB_FILE = "hospitals.db"
 
 MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "LOCAL_TEST_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
 TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)" 
 
 def get_db_connection():
@@ -63,9 +63,10 @@ def chat():
         contents.append({"role": "user", "parts": [{"text": message}]})
 
         try:
+                
                 resp = requests.post(
                     GEMINI_URL,
-                    headers={"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"},
+                    headers={"Content-Type": "application/json"},
                     json={"system_instruction": {"parts": [{"text": context}]}, "contents": contents},
                     timeout=15
                 )

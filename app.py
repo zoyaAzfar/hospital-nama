@@ -15,19 +15,30 @@ def get_db_connection():
     return conn
 
 def build_prompt(hospitals):
+    # Base instructions that apply whether viewing 1 hospital or comparing multiple
+    base_instructions = """
+    You are an AI assistant for 'Hospital Nama', helping users in Pakistan choose the right hospital. 
+    You have been provided with data for the hospital(s) the user is currently viewing.
+
+    STRICT INSTRUCTIONS:
+    1. LANGUAGE MATCHING: Detect the language of the user's question (English, Urdu script, or Roman Urdu) and strictly respond in that exact language/script.
+    2. TONE & FORMAT: Be conversational and helpful. DO NOT use tables or bold headings—they are too overwhelming. Use short, scannable paragraphs.
+    3. SUMMARIZE DATA: Do not spit out raw data or exact decimal percentages. Instead of "48.26% negative reviews", say "mixed reviews, mostly concerning process issues". 
+    4. HIGHLIGHT TRADE-OFFS: If comparing multiple hospitals, clearly highlight the pros and cons (e.g., "Hospital A is cheaper, but Hospital B has better patient feedback"). Factor in distance if the user's location is provided.
+    5. CURRENCY: Any money mentioned is in Pakistani Rupees (PKR).
+    6. DISCLAIMER: Include a brief sentence stating that you provide hospital choice guidance, not medical advice.
+    7. LIMIT: Keep answers brief (under 300 words), but explain the 'why' behind the ratings clearly.
+    8. BOUNDARIES: Do not answer questions outside the scope of hospital choice or the provided data.
+    """
+    
     if len(hospitals) == 1:
-        return (
-            "You are a helpful assistant embedded on a hospital information page. "
-            f"Here is the hospital's data:\n{hospitals[0]}\n\n"
-            "Answer the user's questions using only this data. Be concise and factual."
-        )
-    labels = [f"Hospital {i+1}" for i in range(len(hospitals))]
-    blocks = "\n".join(f"{labels[i]}: {hospitals[i]}" for i in range(len(hospitals)))
-    return (
-        "You are a helpful assistant embedded on a hospital comparison page. "
-        f"The user is comparing:\n{blocks}\n\n"
-        "Answer using only this data. Be concise and factual."
-    )
+        data_context = f"Here is the data for the hospital the user is looking at:\n{hospitals[0]}"
+    else:
+        labels = [f"Hospital {i+1}" for i in range(len(hospitals))]
+        blocks = "\n".join(f"{labels[i]}: {hospitals[i]}" for i in range(len(hospitals)))
+        data_context = f"The user is comparing the following hospitals:\n{blocks}"
+        
+    return f"{base_instructions}\n\n{data_context}"
 
 def get_hospital_by_id(hosp_id):
     conn = get_db_connection()

@@ -141,17 +141,17 @@
 
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="filter-positive-reviews">
-                    <label class="form-check-label small fw-bold" for="filter-positive-reviews">Mostly Positive Reviews (&gt;50%)</label>
+                    <label class="form-check-label small" for="filter-positive-reviews">Mostly Positive Reviews (&gt;50%)</label>
                 </div>
 
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="filter-sehat-card">
-                    <label class="form-check-label small fw-bold" for="filter-sehat-card">Sehat Sahulat Card Accepted</label>
+                    <label class="form-check-label small" for="filter-sehat-card">Sehat Sahulat Card Accepted</label>
                 </div>
 
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="filter-large-capacity">
-                    <label class="form-check-label small fw-bold" for="filter-large-capacity">Large Capacity (Top 25% by Beds)</label>
+                    <label class="form-check-label small" for="filter-large-capacity">Large Capacity (Top 25% by Beds)</label>
                 </div>
 
                 <button id="filter-reset-btn" class="btn btn-sm btn-outline-dark w-100 brutal-input" type="button">Reset Filters</button>
@@ -248,13 +248,9 @@
         box-shadow: none;
         height: 8px;
     }
-    #price-slider .noUi-connect {
-        background: #003049;
-    }
     #price-slider .noUi-handle {
         border-radius: 0 !important;
         background: #780000 !important;
-        border: 2px solid #000 !important;
         box-shadow: none !important;
         width: 18px !important;
         height: 24px !important;
@@ -330,38 +326,34 @@
         }
     }
 
-    function setupHomeFilterControls(data) {
-        // --- Price bounds, computed from live data ---
-        const prices = data
-            .map(h => parseFloat(h["Marham Price"]))
-            .filter(v => !isNaN(v));
-
-        const minPrice = prices.length ? Math.min(...prices) : 0;
-        const maxPrice = prices.length ? Math.max(...prices) : 10000;
-
-        const sliderEl = document.getElementById('price-slider');
-        const priceLabel = document.getElementById('price-range-val');
-
-        if (sliderEl && window.noUiSlider) {
-            priceSlider = noUiSlider.create(sliderEl, {
-                start: [minPrice, maxPrice],
-                connect: true,
-                step: 100,
-                range: { min: minPrice, max: maxPrice },
-                format: {
-                    to: v => Math.round(v),
-                    from: v => Number(v)
-                }
-            });
-
-            priceSlider.on('update', (values) => {
-                if (priceLabel) {
-                    priceLabel.innerText = `Rs ${Number(values[0]).toLocaleString()} - Rs ${Number(values[1]).toLocaleString()}`;
-                }
-            });
+            function setupHomeFilterControls(data) {
+            // Set fixed min and max values
+            const minPrice = 0;
+            const maxPrice = 7000;
+        
+            const sliderEl = document.getElementById('price-slider');
+            const priceLabel = document.getElementById('price-range-val');
+        
+            if (sliderEl && window.noUiSlider) {
+                priceSlider = noUiSlider.create(sliderEl, {
+                    start: [minPrice, maxPrice],
+                    connect: true,
+                    step: 500, // Updated to increments of 500
+                    range: { min: minPrice, max: maxPrice }, // Range is now strictly 0 to 7000
+                    format: {
+                        to: v => Math.round(v),
+                        from: v => Number(v)
+                    }
+                });
+        
+                priceSlider.on('update', (values) => {
+                    if (priceLabel) {
+                        priceLabel.innerText = `Rs ${Number(values[0]).toLocaleString()} - Rs ${Number(values[1]).toLocaleString()}`;
+                    }
+                });
+            }
         }
 
-        // --- Department options, gathered from every hospital's comma-separated list ---
         const deptSet = new Set();
         data.forEach(h => {
             const raw = h["Department"];
@@ -385,8 +377,6 @@
         }
     }
 
-    // Builds a query string from the current filter controls so choices
-    // made on the homepage carry over to the map page.
     function buildFilterQueryParams() {
         const params = new URLSearchParams();
 

@@ -6,7 +6,7 @@ DB_FILE = "hospitals.db"
 
 MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "LOCAL_TEST_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
 TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)" 
 
 def get_db_connection():

@@ -14,6 +14,21 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def build_prompt(hospitals):
+    if len(hospitals) == 1:
+        return (
+            "You are a helpful assistant embedded on a hospital information page. "
+            f"Here is the hospital's data:\n{hospitals[0]}\n\n"
+            "Answer the user's questions using only this data. Be concise and factual."
+        )
+    labels = [f"Hospital {i+1}" for i in range(len(hospitals))]
+    blocks = "\n".join(f"{labels[i]}: {hospitals[i]}" for i in range(len(hospitals)))
+    return (
+        "You are a helpful assistant embedded on a hospital comparison page. "
+        f"The user is comparing:\n{blocks}\n\n"
+        "Answer using only this data. Be concise and factual."
+    )
+
 def get_hospital_by_id(hosp_id):
     conn = get_db_connection()
     try:

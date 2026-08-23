@@ -255,6 +255,9 @@ let mapInitialized = false;
 localStorage.removeItem('compareList');
 let selectedForCompare = [];
 
+let priceSlider = null;
+let driveTimeSlider = null;
+
 // --- FILTER STATE ---
 let priceSlider = null;
 let capacityThreshold = null;
@@ -365,12 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
             initGoogleMap(); // Fallback map render even if API fails
         });
 
-    // Listen for radius changes
-    document.getElementById('radius-slider').addEventListener('input', (e) => {
-    document.getElementById('radius-val').innerText = e.target.value + " mins";
-    filterAndRenderData();
-});
-
     // Recommendations placeholder hook
     document.getElementById('btn-get-recs').addEventListener('click', () => {
         alert("Recommendation logic coming soon!");
@@ -421,6 +418,32 @@ function setupFilterControls(data) {
             filterAndRenderData();
         });
     }
+
+    const driveSliderEl = document.getElementById('drive-time-slider');
+const radiusLabel = document.getElementById('radius-val');
+
+if (driveSliderEl && window.noUiSlider) {
+    driveTimeSlider = noUiSlider.create(driveSliderEl, {
+        start: [15],
+        connect: 'lower', // Highlights the active bar from min to current handle
+        step: 5,
+        range: { min: 5, max: 60 },
+        format: {
+            to: v => Math.round(v),
+            from: v => Number(v)
+        }
+    });
+
+    driveTimeSlider.on('update', (values) => {
+        if (radiusLabel) {
+            radiusLabel.innerText = `${values[0]} mins`;
+        }
+    });
+
+    driveTimeSlider.on('change', () => {
+        filterAndRenderData();
+    });
+}
 
     // --- Department options, gathered from every hospital's comma-separated list ---
     const deptSet = new Set();

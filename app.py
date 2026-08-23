@@ -62,15 +62,22 @@ def chat():
         ]
         contents.append({"role": "user", "parts": [{"text": message}]})
 
-        resp = requests.post(
-            GEMINI_URL,
-            headers={"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"},
-            json={"system_instruction": {"parts": [{"text": context}]}, "contents": contents},
-            timeout=15
-        )
-        resp.raise_for_status()
-        reply = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return jsonify({"reply": reply})
+        try:
+                resp = requests.post(
+                    GEMINI_URL,
+                    headers={"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"},
+                    json={"system_instruction": {"parts": [{"text": context}]}, "contents": contents},
+                    timeout=15
+                )
+                resp.raise_for_status()
+                reply = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                return jsonify({"reply": reply})
+        
+        except requests.exceptions.RequestException as e:
+                status = getattr(e.response, "status_code", None)
+                body = getattr(e.response, "text", str(e))
+                app.logger.error(f"Gemini call failed (status={status}): {body}")
+                return jsonify({"error": f"Gemini error {status}: {body[:200]}"}), 503
 
     except requests.exceptions.RequestException:
         return jsonify({"error": "The assistant is temporarily unavailable. Try again in a moment."}), 503

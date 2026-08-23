@@ -120,14 +120,13 @@
                         <label class="form-label small fw-bold">Edit Location</label>
                         <input type="text" id="sidebar-location-search" class="form-control brutal-input form-control-sm" placeholder="Search Lahore locations...">
                     </div>
-                    <div class="mb-3">
-                    <label class="form-label small fw-bold d-flex justify-content-between">
-                        <span>Max Drive Time</span>
-                        <strong id="radius-val">15 mins</strong>
-                    </label>
-                    <!-- Put the slider ID here, NOT on the label -->
-                    <div id="drive-time-slider" class="custom-slider mt-4 mb-2"></div>
-                </div>
+                    <div class="mb-4">
+    <label class="form-label small fw-bold d-flex justify-content-between">
+        <span>Max Drive Time</span>
+        <strong id="radius-val">15 mins</strong>
+    </label>
+    <div id="drive-time-slider" class="mt-4 mb-2"></div>
+</div>
                 </div>
                 
                 <div class="brutal-border p-3 mb-4">
@@ -142,12 +141,12 @@
                     <h5 class="fw-bold border-dark pb-2 mb-3">Filter Hospitals</h5>
 
                     <div class="mb-4">
-                        <label class="form-label small fw-bold d-flex justify-content-between">
-                            <span>Price Range</span>
-                            <strong id="price-range-val">—</strong>
-                        </label>
-                        <div id="price-slider" class="mt-4 mb-2"></div>
-                    </div>
+    <label class="form-label small fw-bold d-flex justify-content-between">
+        <span>Price Range</span>
+        <strong id="price-range-val">—</strong>
+    </label>
+    <div id="price-slider" class="mt-4 mb-2"></div>
+</div>
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Departments Needed</label>
@@ -209,7 +208,8 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 <style>
-.custom-slider.noUi-target {
+#price-slider.noUi-target,
+#drive-time-slider.noUi-target {
     background: #e9ecef;
     border-radius: 4px;
     border: 1px solid #ddd;
@@ -217,11 +217,13 @@
     height: 8px;
 }
 
-.custom-slider .noUi-connect {
+#price-slider .noUi-connect,
+#drive-time-slider .noUi-connect {
     background: #780000 !important;
 }
 
-.custom-slider .noUi-handle {
+#price-slider .noUi-handle,
+#drive-time-slider .noUi-handle {
     border-radius: 50% !important;
     background: #780000 !important;
     border: 2px solid #780000 !important;
@@ -233,8 +235,10 @@
     cursor: pointer;
 }
 
-.custom-slider .noUi-handle:before,
-.custom-slider .noUi-handle:after {
+#price-slider .noUi-handle:before,
+#price-slider .noUi-handle:after,
+#drive-time-slider .noUi-handle:before,
+#drive-time-slider .noUi-handle:after {
     display: none;
 }
 </style>

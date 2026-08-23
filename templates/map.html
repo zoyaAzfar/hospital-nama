@@ -121,11 +121,12 @@
                         <input type="text" id="sidebar-location-search" class="form-control brutal-input form-control-sm" placeholder="Search Lahore locations...">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold d-flex justify-content-between" id = "hi">
+                    <label class="form-label small fw-bold d-flex justify-content-between">
                         <span>Max Drive Time</span>
                         <strong id="radius-val">15 mins</strong>
                     </label>
-                    <input type="range" class="form-range" id="radius-slider" min="5" max="60" step="5" value="15">
+                    <!-- Put the slider ID here, NOT on the label -->
+                    <div id="drive-time-slider" class="custom-slider mt-4 mb-2"></div>
                 </div>
                 </div>
                 
@@ -208,7 +209,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 <style>
-      #price-slider.noUi-target, #hi {
+.custom-slider.noUi-target {
     background: #e9ecef;
     border-radius: 4px;
     border: 1px solid #ddd;
@@ -216,11 +217,11 @@
     height: 8px;
 }
 
-#price-slider .noUi-connect, #hi {
+.custom-slider .noUi-connect {
     background: #780000 !important;
 }
 
-#price-slider .noUi-handle, #hi {
+.custom-slider .noUi-handle {
     border-radius: 50% !important;
     background: #780000 !important;
     border: 2px solid #780000 !important;
@@ -232,8 +233,8 @@
     cursor: pointer;
 }
 
-#price-slider .noUi-handle:before,
-#price-slider .noUi-handle:after {
+.custom-slider .noUi-handle:before,
+.custom-slider .noUi-handle:after {
     display: none;
 }
 </style>

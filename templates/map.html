@@ -368,9 +368,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     // Recommendations placeholder hook
-    document.getElementById('btn-get-recs').addEventListener('click', () => {
-        alert("Recommendation logic coming soon!");
-    });
+    const recsBtn = document.getElementById('btn-get-recs');
+        if (recsBtn) {
+            recsBtn.addEventListener('click', () => {
+                alert("Recommendation logic coming soon!");
+            });
+        }
 });
 
 // --- FILTER WIDGET SETUP ---
@@ -616,7 +619,7 @@ function initGoogleMap() {
         map: map, position: userLocation, content: userPin.element, title: "Your Location"
     });
 
-    const initialRadiusMeters = parseInt(document.getElementById('radius-slider').value) * 1000;
+    const initialRadiusMeters = (driveTimeSlider ? parseFloat(driveTimeSlider.get()) : 15) * 0.5 * 1000;
     radiusCircle = new google.maps.Circle({
         map: map, center: userLocation, radius: initialRadiusMeters,
         strokeColor: '#000000', strokeOpacity: 0.8, strokeWeight: 2,
@@ -649,8 +652,7 @@ function setupSidebarAutocomplete(inputEl) {
 function updateSpatialLayers() {
     if (!mapInitialized) return;
     
-    const targetMins = parseFloat(document.getElementById('radius-slider').value);
-    
+    const targetMins = driveTimeSlider ? parseFloat(driveTimeSlider.get()) : 15;    
     // Estimate radius for visual map circle:
     // Assuming an average urban speed of ~30 km/h (0.5 km per min)
     const estimatedKm = targetMins * 0.5; 
@@ -665,7 +667,7 @@ function updateSpatialLayers() {
 function filterAndRenderData() {
     if (!mapInitialized) return;
 
-    const targetMaxMinutes = parseFloat(document.getElementById('radius-slider').value);
+    const targetMaxMinutes = driveTimeSlider ? parseFloat(driveTimeSlider.get()) : 15;
     updateSpatialLayers();
 
     mapMarkers.forEach(m => m.map = null);

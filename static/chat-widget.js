@@ -4,7 +4,7 @@
 
   const btn = document.createElement("button");
   btn.id = "hc-widget-btn";
-  btn.innerText = "Ask AI";
+  btn.innerText = "💬";
   document.body.appendChild(btn);
 
   const panel = document.createElement("div");

@@ -6,8 +6,8 @@ DB_FILE = "hospitals.db"
 
 MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "LOCAL_TEST_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
-#TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)" 
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent"
+TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)" 
 
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
@@ -41,38 +41,27 @@ def get_hospital_by_id(hosp_id):
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.get_json(silent=True) or {}
-    hospital_ids = data.get('hospital_ids', [])
-    message = (data.get('message') or '').strip()
-    history = data.get('history', [])[-20:]  # cap history so requests don't balloon
-
-    if not hospital_ids or not message:
-        return jsonify({"error": "hospital_ids and message are required"}), 400
-
-    hospitals = [h for h in (get_hospital_by_id(hid) for hid in hospital_ids) if h]
-    if not hospitals:
-        return jsonify({"error": "Couldn't find that hospital."}), 404
-
-    if len(hospitals) == 1:
-        context = (
-            "You are a helpful assistant embedded on a hospital information page. "
-            f"Here is the hospital's data:\n{hospitals[0]}\n\n"
-            "Answer the user's questions using only this data. Be concise and factual."
-        )
-    else:
-        context = (
-            "You are a helpful assistant embedded on a hospital comparison page. "
-            f"The user is comparing:\nHospital A: {hospitals[0]}\nHospital B: {hospitals[1]}\n\n"
-            "Answer using only this data. Be concise and factual."
-        )
-
-    contents = [
-        {"role": "user" if t.get("role") == "user" else "model", "parts": [{"text": t.get("text", "")}]}
-        for t in history
-    ]
-    contents.append({"role": "user", "parts": [{"text": message}]})
-
     try:
+        data = request.get_json(silent=True) or {}
+        hospital_ids = data.get('hospital_ids', [])
+        message = (data.get('message') or '').strip()
+        history = data.get('history', [])[-20:]
+
+        if not hospital_ids or not message:
+            return jsonify({"error": "hospital_ids and message are required"}), 400
+
+        hospitals = [h for h in (get_hospital_by_id(hid) for hid in hospital_ids) if h]
+        if not hospitals:
+            return jsonify({"error": "Couldn't find that hospital."}), 404
+
+        context = build_prompt(hospitals)
+
+        contents = [
+            {"role": "user" if t.get("role") == "user" else "model", "parts": [{"text": t.get("text", "")}]}
+            for t in history
+        ]
+        contents.append({"role": "user", "parts": [{"text": message}]})
+
         resp = requests.post(
             GEMINI_URL,
             headers={"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"},
@@ -82,11 +71,13 @@ def chat():
         resp.raise_for_status()
         reply = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
         return jsonify({"reply": reply})
+
     except requests.exceptions.RequestException:
         return jsonify({"error": "The assistant is temporarily unavailable. Try again in a moment."}), 503
-    except (KeyError, IndexError):
-        return jsonify({"error": "Unexpected response from the assistant."}), 502
-
+    except Exception as e:
+        app.logger.exception("chat route failed")
+        return jsonify({"error": f"Server error: {e}"}), 500
+    
 @app.context_processor
 def inject_maps_key():
     return dict(maps_key=MAPS_API_KEY)

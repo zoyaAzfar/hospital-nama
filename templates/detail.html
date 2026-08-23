@@ -616,5 +616,12 @@ function goBackToMajorChart() {
     document.getElementById('major-review').innerText = 'Click on the pie chart to see more details.';
     document.getElementById('major-details-content').innerText = 'Click on the pie chart to see more details.';
 }</script>
+    <script>
+  window.HOSPITAL_CHAT_CONFIG = {
+    getHospitalIds: () => [{{ hosp_id }}]
+  };
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='chat-widget.css') }}">
+<script src="{{ url_for('static', filename='chat-widget.js') }}"></script>
 </body>
 </html>

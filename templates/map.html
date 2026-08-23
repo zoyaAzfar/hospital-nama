@@ -156,17 +156,17 @@
 
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" id="filter-positive-reviews">
-                        <label class="form-check-label small fw-bold" for="filter-positive-reviews">Mostly Positive Reviews (&gt;50%)</label>
+                        <label class="form-check-label small" for="filter-positive-reviews">Mostly Positive Reviews (&gt;50%)</label>
                     </div>
 
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" id="filter-sehat-card">
-                        <label class="form-check-label small fw-bold" for="filter-sehat-card">Sehat Sahulat Card Accepted</label>
+                        <label class="form-check-label small" for="filter-sehat-card">Sehat Sahulat Card Accepted</label>
                     </div>
 
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="filter-large-capacity">
-                        <label class="form-check-label small fw-bold" for="filter-large-capacity">Large Capacity (Top 25% by Beds)</label>
+                        <label class="form-check-label small" for="filter-large-capacity">Large Capacity (Top 25% by Beds)</label>
                     </div>
 
                     <button id="filter-reset-btn" class="btn btn-sm btn-outline-dark w-100 brutal-input" type="button">Reset Filters</button>
@@ -371,13 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // --- FILTER WIDGET SETUP ---
 function setupFilterControls(data) {
-    // --- Price bounds, computed from live data, pre-filled from URL if present ---
-    const prices = data
-        .map(h => parseFloat(h["Marham Price"]))
-        .filter(v => !isNaN(v));
-
-    const minPrice = prices.length ? Math.min(...prices) : 0;
-    const maxPrice = prices.length ? Math.max(...prices) : 10000;
+    // --- Fixed price bounds ---
+    const minPrice = 0;
+    const maxPrice = 7000;
 
     const urlPriceMin = parseFloat(urlParams.get('price_min'));
     const urlPriceMax = parseFloat(urlParams.get('price_max'));
@@ -396,8 +392,8 @@ function setupFilterControls(data) {
         priceSlider = noUiSlider.create(sliderEl, {
             start: [startMin, startMax],
             connect: true,
-            step: 100,
-            range: { min: minPrice, max: maxPrice },
+            step: 500, // Updated to increments of 500
+            range: { min: minPrice, max: maxPrice }, // Range is now 0 to 7000
             format: {
                 to: v => Math.round(v),
                 from: v => Number(v)

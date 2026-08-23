@@ -241,27 +241,34 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 <style>
-    #price-slider.noUi-target {
-        background: #e9ecef;
-        border-radius: 0;
-        border: 2px solid #000;
-        box-shadow: none;
-        height: 8px;
-    }
-    #price-slider .noUi-handle {
-        border-radius: 0 !important;
-        background: #780000 !important;
-        box-shadow: none !important;
-        width: 18px !important;
-        height: 24px !important;
-        top: -9px !important;
-        right: -9px !important;
-        cursor: pointer;
-    }
-    #price-slider .noUi-handle:before,
-    #price-slider .noUi-handle:after {
-        display: none;
-    }
+   #price-slider.noUi-target {
+    background: #e9ecef;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: none;
+    height: 8px;
+}
+
+#price-slider .noUi-connect {
+    background: #780000 !important;
+}
+
+#price-slider .noUi-handle {
+    border-radius: 50% !important;
+    background: #780000 !important;
+    border: 2px solid #780000 !important;
+    box-shadow: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    top: -7px !important;
+    right: -10px !important;
+    cursor: pointer;
+}
+
+#price-slider .noUi-handle:before,
+#price-slider .noUi-handle:after {
+    display: none;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&v=weekly&libraries=marker,places"></script>

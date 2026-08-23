@@ -326,34 +326,34 @@
         }
     }
 
-            function setupHomeFilterControls(data) {
-            // Set fixed min and max values
-            const minPrice = 0;
-            const maxPrice = 7000;
+    function setupHomeFilterControls(data) {
+        // Set fixed min and max values
+        const minPrice = 0;
+        const maxPrice = 7000;
         
-            const sliderEl = document.getElementById('price-slider');
-            const priceLabel = document.getElementById('price-range-val');
+        const sliderEl = document.getElementById('price-slider');
+        const priceLabel = document.getElementById('price-range-val');
         
-            if (sliderEl && window.noUiSlider) {
-                priceSlider = noUiSlider.create(sliderEl, {
-                    start: [minPrice, maxPrice],
-                    connect: true,
-                    step: 500, // Updated to increments of 500
-                    range: { min: minPrice, max: maxPrice }, // Range is now strictly 0 to 7000
-                    format: {
-                        to: v => Math.round(v),
-                        from: v => Number(v)
-                    }
-                });
+        if (sliderEl && window.noUiSlider) {
+            priceSlider = noUiSlider.create(sliderEl, {
+                start: [minPrice, maxPrice],
+                connect: true,
+                step: 500,
+                range: { min: minPrice, max: maxPrice },
+                format: {
+                    to: v => Math.round(v),
+                    from: v => Number(v)
+                }
+            });
         
-                priceSlider.on('update', (values) => {
-                    if (priceLabel) {
-                        priceLabel.innerText = `Rs ${Number(values[0]).toLocaleString()} - Rs ${Number(values[1]).toLocaleString()}`;
-                    }
-                });
-            }
+            priceSlider.on('update', (values) => {
+                if (priceLabel) {
+                    priceLabel.innerText = `Rs ${Number(values[0]).toLocaleString()} - Rs ${Number(values[1]).toLocaleString()}`;
+                }
+            });
         }
 
+        // --- Department options, properly scoped inside function ---
         const deptSet = new Set();
         data.forEach(h => {
             const raw = h["Department"];
@@ -410,7 +410,7 @@
         const ac = new google.maps.places.Autocomplete(inputEl, {
             bounds: lahoreBounds, 
             strictBounds: true, 
-            componentRestrictions: { country: 'pk' }, // Narrows down suggestions to Pakistan
+            componentRestrictions: { country: 'pk' },
             fields: ['geometry', 'name']
         });
     

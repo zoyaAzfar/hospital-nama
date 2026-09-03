@@ -181,10 +181,11 @@ def trigger_sync():
             
         finally:
             client.close()
-
+  
+    import traceback
     except Exception as e:
         app.logger.exception("Sync failed")
-        return jsonify({"error": f"Sync failed: {str(e)}"}), 500
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 @app.route('/api/hospitals')
 def get_hospitals():

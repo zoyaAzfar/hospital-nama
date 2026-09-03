@@ -153,24 +153,21 @@ def trigger_sync():
         phc_data = response.json()
 
         client = get_db_client()
-        updated_count = 0
 
         try:
             hospitals_list = phc_data.get("Zoninginspect", [])
 
-            for hospital in hospitals_list:
-                zone = hospital.get("Coloring_Zone")
-                r_no = hospital.get("R-No")
+            stmts = [
+                (
+                    f'UPDATE "{TABLE_NAME}" SET "PHC Zone" = ? WHERE "Registration" = ?',
+                    [hospital.get("Coloring_Zone"), hospital.get("R-No")]
+                )
+                for hospital in hospitals_list
+                if hospital.get("R-No")
+            ]
 
-                if r_no:
-                    update_query = f'''
-                        UPDATE "{TABLE_NAME}"
-                        SET "PHC Zone" = ?
-                        WHERE "Registration" = ?
-                    '''
-                    res = client.execute(update_query, [zone, r_no])
-                    if res.rows_affected > 0:
-                        updated_count += 1
+            results = client.batch(stmts)
+            updated_count = sum(1 for r in results if r.rows_affected > 0)
 
             return jsonify({
                 "status": "success",

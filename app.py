@@ -157,9 +157,11 @@ def trigger_sync():
         updated_count = 0
         
         try:
-            for hospital in phc_data:
+            # Extract the actual list of hospitals from the dictionary first
+            hospitals_list = phc_data.get("Zoninginspect", [])
+            
+            for hospital in hospitals_list:
                 zone = hospital.get('Coloring_Zone')
-                r_no = hospital.get('R-No')
                 
                 update_query = f'''
                     UPDATE "{TABLE_NAME}" 

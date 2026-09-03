@@ -1,5 +1,6 @@
+import os, requests
+import libsql_client  
 from flask import Flask, render_template, jsonify, abort, send_from_directory, request
-import sqlite3, os, requests
 
 app = Flask(__name__)
 DB_FILE = "hospitals.db"
@@ -9,10 +10,11 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
 TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)" 
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    return conn
+def get_db_client():
+    url = os.environ.get("TURSO_DATABASE_URL", "file:hospitals.db")
+    token = os.environ.get("TURSO_AUTH_TOKEN", "")
+    
+    return libsql_client.create_client_sync(url=url, auth_token=token)
 
 def build_prompt(hospitals):
     # Base instructions that apply whether viewing 1 hospital or comparing multiple
@@ -41,14 +43,15 @@ def build_prompt(hospitals):
     return f"{base_instructions}\n\n{data_context}"
 
 def get_hospital_by_id(hosp_id):
-    conn = get_db_connection()
+    client = get_db_client()
     try:
-        cursor = conn.cursor()
-        cursor.execute(f'SELECT rowid AS id, * FROM "{TABLE_NAME}" WHERE rowid = ?', (hosp_id,))
-        row = cursor.fetchone()
-        return dict(row) if row else None
+        result = client.execute(f'SELECT rowid AS id, * FROM "{TABLE_NAME}" WHERE rowid = ?', [hosp_id])
+        
+        if result.rows:
+            return dict(zip(result.columns, result.rows[0]))
+        return None
     finally:
-        conn.close()
+        client.close()
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -138,35 +141,19 @@ def robots():
 
 @app.route('/api/hospitals')
 def get_hospitals():
-    conn = get_db_connection()
-
+    client = get_db_client()
     try:
-        cursor = conn.cursor()
+        # Fetch all hospitals
+        result = client.execute(f'SELECT rowid AS id, * FROM "{TABLE_NAME}"')
+        
+        # Convert all rows into dictionaries 
+        hospitals = [dict(zip(result.columns, row)) for row in result.rows]
+        return jsonify(hospitals)
 
-        TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)"
-
-        # Get columns
-        cursor.execute(f'PRAGMA table_info("{TABLE_NAME}")')
-        columns = [row["name"] for row in cursor.fetchall()]
-
-        # Build SELECT
-        select_clause = ", ".join([f'"{c}"' for c in columns])
-
-        query = f'''
-            SELECT rowid AS id, {select_clause}
-            FROM "{TABLE_NAME}"
-        '''
-
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        return jsonify([dict(row) for row in rows])
-
-    except sqlite3.Error as e:
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
-
     finally:
-        conn.close()
+        client.close()
         
 if __name__ == '__main__':
     app.run()

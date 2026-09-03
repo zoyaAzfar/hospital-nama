@@ -145,10 +145,6 @@ def robots():
 
 @app.route('/sync-zones')
 def trigger_sync():
-    provided_key = request.args.get('key')
-    if provided_key != "my_secret_password":
-        return jsonify({"error": "Unauthorized. Nice try!"}), 401
-
     PHC_URL = "https://www.phc.org.pk:44339/api/CG/GetZoningInspected"
     payload = {"Zoning": None, "DistrictID": 17}
 

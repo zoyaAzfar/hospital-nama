@@ -14,6 +14,11 @@ def get_db_client():
     url = os.environ.get("TURSO_DATABASE_URL", "file:hospitals.db")
     token = os.environ.get("TURSO_AUTH_TOKEN", "")
     
+    if url.startswith("file:"):
+        print("DATABASE: Using Local File")
+    else:
+        print("dATABASE: Using Turso Cloud")
+        
     return libsql_client.create_client_sync(url=url, auth_token=token)
 
 def build_prompt(hospitals):
@@ -138,6 +143,48 @@ def sitemap():
 def robots():
     return send_from_directory("static", "robots.txt")
 
+@app.route('/sync-zones')
+def trigger_sync():
+    provided_key = request.args.get('key')
+    if provided_key != "password?":
+        return jsonify({"error": "Unauthorized. Nice try!"}), 401
+
+    PHC_URL = "https://www.phc.org.pk:44339/api/CG/GetZoningInspected"
+    payload = {"Zoning": None, "DistrictID": 17}
+
+    try:
+        response = requests.post(PHC_URL, json=payload, timeout=15)
+        response.raise_for_status()
+        phc_data = response.json()
+        
+        client = get_db_client()
+        updated_count = 0
+        
+        try:
+            for hospital in phc_data:
+                zone = hospital.get('Coloring_Zone')
+                r_no = hospital.get('R-No')
+                
+                update_query = f'''
+                    UPDATE "{TABLE_NAME}" 
+                    SET "PHC Zone" = ? 
+                    WHERE "Registration" = ? 
+                '''
+                
+                res = client.execute(update_query, [zone, r_no])
+                if res.rows_affected > 0:
+                    updated_count += 1
+                    
+            return jsonify({
+                "status": "success",
+                "message": f"Updated PHC Zones for {updated_count} hospitals."
+            })
+        finally:
+            client.close()
+
+    except Exception as e:
+        app.logger.exception("Sync failed")
+        return jsonify({"error": f"Sync failed: {str(e)}"}), 500
 
 @app.route('/api/hospitals')
 def get_hospitals():

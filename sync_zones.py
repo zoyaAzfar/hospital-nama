@@ -1,56 +1,43 @@
-import requests
-import sqlite3
+@app.route('/sync-zones')
+def trigger_sync():
+    provided_key = request.args.get('key')
+    if provided_key != "my_secret_password":
+        return jsonify({"error": "Unauthorized. Nice try!"}), 401
 
-DB_FILE = "hospitals.db"
-TABLE_NAME = "NEW_database_of_hospitals (the updated beauty) (1)"
-PHC_URL = "https://www.phc.org.pk:44339/api/CG/GetZoningInspected"
-
-def sync_phc_zones():
-    payload = {
-        "Zoning": None, 
-        "DistrictID": 17
-    }
+    PHC_URL = "https://www.phc.org.pk:44339/api/CG/GetZoningInspected"
+    payload = {"Zoning": None, "DistrictID": 17}
 
     try:
-        print("Fetching latest zones from PHC...")
         response = requests.post(PHC_URL, json=payload, timeout=15)
         response.raise_for_status()
         phc_data = response.json()
-        print(f"Successfully fetched {len(phc_data)} hospitals from PHC.")
-    except requests.exceptions.RequestException as e:
-        print(f"Failed to fetch from PHC API: {e}")
-        return
-
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
         
+        client = get_db_client()
         updated_count = 0
         
-        for hospital in phc_data:
-            zone = hospital.get('Coloring_Zone')
-            
-            r_no = hospital.get('R-No') 
-            
-            update_query = f'''
-                UPDATE "{TABLE_NAME}" 
-                SET "PHC Zone" = ? 
-                WHERE "Registration" = ? 
-            '''
-            
-            cursor.execute(update_query, (zone, r_no))
-            
-            if cursor.rowcount > 0:
-                updated_count += 1
+        try:
+            for hospital in phc_data:
+                zone = hospital.get('Coloring_Zone')
+                r_no = hospital.get('R-No')
+                
+                update_query = f'''
+                    UPDATE "{TABLE_NAME}" 
+                    SET "PHC Zone" = ? 
+                    WHERE "Registration" = ? 
+                '''
+                
+                res = client.execute(update_query, [zone, r_no])
+                
+                if res.rows_affected > 0:
+                    updated_count += 1
+                    
+            return jsonify({
+                "status": "success",
+                "message": f"Updated PHC Zones for {updated_count} hospitals."
+            })
+        finally:
+            client.close()
 
-        conn.commit()
-        print(f"Success! Updated the PHC Zone for {updated_count} out of your 45 hospitals.")
-
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-    finally:
-        if conn:
-            conn.close()
-
-if __name__ == "__main__":
-    sync_phc_zones()
+    except Exception as e:
+        app.logger.exception("Sync failed")
+        return jsonify({"error": f"Sync failed: {str(e)}"}), 500

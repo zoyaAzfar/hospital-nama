@@ -30,15 +30,15 @@ def sync_phc_zones():
         for hospital in phc_data:
             zone = hospital.get('Coloring_Zone')
             
-            phc_identifier = hospital.get('HCEName') 
+            r_no = hospital.get('R-No') 
             
             update_query = f'''
                 UPDATE "{TABLE_NAME}" 
                 SET "PHC Zone" = ? 
-                WHERE "Name" = ? 
+                WHERE "Registration" = ? 
             '''
             
-            cursor.execute(update_query, (zone, phc_identifier))
+            cursor.execute(update_query, (zone, r_no))
             
             if cursor.rowcount > 0:
                 updated_count += 1
